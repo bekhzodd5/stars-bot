@@ -9,10 +9,10 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQu
 logging.basicConfig(level=logging.INFO)
 
 # ================= SOZLAMALAR =================
-BOT_TOKEN = "8082457826:AAFuokudXYFSsvNzO9iMDm7UWSaqkn2GU7g"
+BOT_TOKEN = "8982437206:AAHG7cnaU_QkX9eCyW_d6SVhOv5bGnm4M_s"
 ADMIN_USERNAME = "rymbyvv"
-CARD_NUMBER = "8600 0000 0000 0000"  # O'zingizning karta raqamingiz
-CARD_NAME = "BEKHZOD R."             # Karta egasi ismi
+CARD_NUMBER = "9860 3566 3465 1745"  
+CARD_NAME = "Elvira Kuralova"             
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
@@ -65,7 +65,7 @@ async def balance_handler(call: CallbackQuery):
 @dp.callback_query(F.data == "topup_balance")
 async def topup_handler(call: CallbackQuery):
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="✅ To'lov qildim (Chek yuborish)", url=f"https://t.me/{ADMIN_USERNAME}")],
+        [InlineKeyboardButton(text="✅ To'lov qildim (Chek yuborish)", url=f"https://t.me/{rymbyvv}")],
         [InlineKeyboardButton(text="◀️ Orqaga", callback_data="back_main")]
     ])
     await call.message.edit_text(
