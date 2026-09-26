@@ -12,7 +12,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQu
 logging.basicConfig(level=logging.INFO)
 
 # ================= SOZLAMALAR =================
-BOT_TOKEN = "8982437206:AAEegwkmLXR28Fz01cfyOH6w9LNxxQsYuTM"
+BOT_TOKEN = "8082457826:AAFuokudXYFSsvNzO9iMDm7UWSaqkn2GU7g"
 ADMIN_USERNAME = "rymbyvv"
 CHANNEL_URL = "https://t.me/rymbyvv_otziv"
 CARD_NUMBER = "9860 3566 3465 1745"
@@ -32,43 +32,43 @@ class OrderState(StatesGroup):
     waiting_for_username = State()
     waiting_for_check = State()
 
-# ================= ASOSIY MENYU (CUSTOM EMOJILAR BILAN) =================
+# ================= ASOSIY MENYU =================
 def get_main_menu():
     buttons = [
         [
             InlineKeyboardButton(
                 text="Stars",
                 callback_data="menu_stars",
-                icon_custom_emoji_id="5924870095925942277"  # Animatsiyali Stars yulduzi
+                icon_custom_emoji_id="5924870095925942277"
             ),
             InlineKeyboardButton(
                 text="Premium",
                 callback_data="menu_premium",
-                icon_custom_emoji_id="5370784581341422520"  # Binafsharang Premium yulduzi
+                icon_custom_emoji_id="5370784581341422520"
             )
         ],
         [
             InlineKeyboardButton(
                 text="Gift olish",
                 callback_data="menu_gifts",
-                icon_custom_emoji_id="5193085063998224234"  # Animatsiyali sovg'a qutisi
+                icon_custom_emoji_id="5193085063998224234"
             ),
             InlineKeyboardButton(
                 text="Hisobim",
                 callback_data="menu_balance",
-                icon_custom_emoji_id="5276111643732899391"  # Pul xaltasi
+                icon_custom_emoji_id="5276111643732899391"
             )
         ],
         [
             InlineKeyboardButton(
                 text="To'lovlar kanali",
                 url="https://t.me/rymbyvv_otziv",
-                icon_custom_emoji_id="5276428990276461681"  # Kanal / Rasm belgisi
+                icon_custom_emoji_id="5276428990276461681"
             ),
             InlineKeyboardButton(
                 text="Yordam",
                 url="https://t.me/rymbyvv",
-                icon_custom_emoji_id="5458865156467491802"  # Savol / Yordam belgisi
+                icon_custom_emoji_id="5458865156467491802"
             )
         ]
     ]
@@ -86,15 +86,15 @@ async def start_cmd(message: types.Message, state: FSMContext):
 async def stars_menu(call: CallbackQuery):
     buttons = [
         [
-            InlineKeyboardButton(text="50 Stars — 12,500 so'm", callback_data="buy:50 Stars:12500"),
-            InlineKeyboardButton(text="100 Stars — 20,500 so'm", callback_data="buy:100 Stars:20500")
+            InlineKeyboardButton(text="50 Stars — 12 500 so'm", callback_data="buy:50 Stars:12500"),
+            InlineKeyboardButton(text="100 Stars — 20 500 so'm", callback_data="buy:100 Stars:20500")
         ],
         [
-            InlineKeyboardButton(text="150 Stars — 38,500 so'm", callback_data="buy:150 Stars:38500"),
-            InlineKeyboardButton(text="200 Stars — 45,000 so'm", callback_data="buy:200 Stars:45000")
+            InlineKeyboardButton(text="150 Stars — 38 500 so'm", callback_data="buy:150 Stars:38500"),
+            InlineKeyboardButton(text="200 Stars — 45 000 so'm", callback_data="buy:200 Stars:45000")
         ],
         [
-            InlineKeyboardButton(text="250 Stars — 55,000 so'm", callback_data="buy:250 Stars:55000")
+            InlineKeyboardButton(text="250 Stars — 55 000 so'm", callback_data="buy:250 Stars:55000")
         ],
         [InlineKeyboardButton(text="◀️ Orqaga", callback_data="back_main")]
     ]
@@ -105,12 +105,12 @@ async def stars_menu(call: CallbackQuery):
 async def prem_menu(call: CallbackQuery):
     buttons = [
         [
-            InlineKeyboardButton(text="1 Oylik — 45,000 so'm", callback_data="buy:1 Oylik Premium:45000"),
-            InlineKeyboardButton(text="3 Oylik — 165,000 so'm", callback_data="buy:3 Oylik Premium:165000")
+            InlineKeyboardButton(text="1 Oylik — 45 000 so'm", callback_data="buy:1 Oylik Premium:45000"),
+            InlineKeyboardButton(text="3 Oylik — 165 000 so'm", callback_data="buy:3 Oylik Premium:165000")
         ],
         [
-            InlineKeyboardButton(text="6 Oylik — 210,000 so'm", callback_data="buy:6 Oylik Premium:210000"),
-            InlineKeyboardButton(text="1 Yillik — 385,000 so'm", callback_data="buy:1 Yillik Premium:385000")
+            InlineKeyboardButton(text="6 Oylik — 210 000 so'm", callback_data="buy:6 Oylik Premium:210000"),
+            InlineKeyboardButton(text="1 Yillik — 385 000 so'm", callback_data="buy:1 Yillik Premium:385000")
         ],
         [InlineKeyboardButton(text="◀️ Orqaga", callback_data="back_main")]
     ]
@@ -121,12 +121,12 @@ async def prem_menu(call: CallbackQuery):
 async def gifts_menu(call: CallbackQuery):
     buttons = [
         [
-            InlineKeyboardButton(text="🐾 15 Stars Gift — 3,500", callback_data="buy:15 Stars Gift:3500"),
-            InlineKeyboardButton(text="🎁 25 Stars Gift — 6,500", callback_data="buy:25 Stars Gift:6500")
+            InlineKeyboardButton(text="🐾 15 Stars Gift — 3 500", callback_data="buy:15 Stars Gift:3500"),
+            InlineKeyboardButton(text="🎁 25 Stars Gift — 6 500", callback_data="buy:25 Stars Gift:6500")
         ],
         [
-            InlineKeyboardButton(text="🚀 50 Stars Gift — 10,500", callback_data="buy:50 Stars Gift:10500"),
-            InlineKeyboardButton(text="💎 100 Stars Gift — 20,500", callback_data="buy:100 Stars Gift:20500")
+            InlineKeyboardButton(text="🚀 50 Stars Gift — 10 500", callback_data="buy:50 Stars Gift:10500"),
+            InlineKeyboardButton(text="💎 100 Stars Gift — 20 500", callback_data="buy:100 Stars Gift:20500")
         ],
         [InlineKeyboardButton(text="◀️ Orqaga", callback_data="back_main")]
     ]
@@ -143,17 +143,37 @@ async def process_buy_step(call: CallbackQuery, state: FSMContext):
     await state.set_state(OrderState.waiting_for_username)
 
     buttons = [
-        [InlineKeyboardButton(text="👤 O'zimga", callback_data="target_self")],
-        [InlineKeyboardButton(text="◀️ Orqaga", callback_data="back_main")]
+        [
+            InlineKeyboardButton(
+                text="O'zimga", 
+                callback_data="target_self",
+                icon_custom_emoji_id="5370784581341422520"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text="Orqaga", 
+                callback_data="back_main",
+                icon_custom_emoji_id="5458865156467491802"
+            )
+        ]
     ]
+
+    formatted_price = f"{price:,}".replace(",", " ")
+
     text = (
-        "💻 Buyurtma ma'lumotlari:\n"
-        f" └ 📦 Mahsulot: {item_name}\n"
-        f" └ 💰 Narxi: {price:,} so'm\n\n"
-        "🔮 Kimga yuboramiz?\n"
-        "@ @username kiriting:"
+        '<tg-emoji id="5271628569754222702">💻</tg-emoji> <b>Buyurtma maʼlumotlari:</b>\n'
+        f' └ <tg-emoji id="5271779885747025897">📦</tg-emoji> Mahsulot: <b>{item_name}</b>\n'
+        f' └ <tg-emoji id="5470164781631550914">💰</tg-emoji> Narxi: <b>{formatted_price} so\'m</b>\n\n'
+        '<tg-emoji id="5098103318241085355">🔮</tg-emoji> <b>Kimga yuboramiz?</b>\n'
+        '@ @username kiriting:'
     )
-    await call.message.edit_text(text, reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons))
+    
+    await call.message.edit_text(
+        text, 
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons),
+        parse_mode="HTML"
+    )
 
 @dp.callback_query(F.data == "target_self")
 async def target_self_handler(call: CallbackQuery, state: FSMContext):
@@ -177,12 +197,13 @@ async def finalize_order(event, state: FSMContext, target: str):
     price = data.get("price")
     user_id = event.from_user.id
     bal = get_bal(user_id)
+    formatted_price = f"{price:,}".replace(",", " ")
 
     if bal < price:
         alert_msg = (
             "😞 Balansingiz yetarli emas!\n\n"
             f"💰 Hisobingizda: {bal:,} so'm\n"
-            f"💸 Kerakli: {price:,} so'm"
+            f"💸 Kerakli: {formatted_price} so'm"
         )
         if isinstance(event, CallbackQuery):
             await event.answer(alert_msg, show_alert=True)
@@ -195,12 +216,12 @@ async def finalize_order(event, state: FSMContext, target: str):
     await state.clear()
     
     success_text = (
-        "✅ <b>Buyurtma muvaffaqiyatli qabul qilindi!</b>\n\n"
-        f"📦 Mahsulot: <b>{item_name}</b>\n"
-        f"👤 Qabul qiluvchi: <b>{target}</b>\n"
-        f"💰 Yechildi: <b>{price:,} so'm</b>\n"
-        f"💵 Qolgan balans: <b>{user_balances[user_id]:,} so'm</b>\n\n"
-        "⚡ 5 daqiqa ichida yetkazib beriladi!"
+        '<tg-emoji id="5271628569754222702">💻</tg-emoji> <b>Buyurtmangiz qabul qilindi!</b>\n\n'
+        f' └ <tg-emoji id="5271779885747025897">📦</tg-emoji> Mahsulot: <b>{item_name}</b>\n'
+        f' └ <tg-emoji id="5470164781631550914">💰</tg-emoji> Narxi: <b>{formatted_price} so\'m</b>\n'
+        f' └ <tg-emoji id="5460747992820629019">👤</tg-emoji> Qabul qiluvchi: <b>{target}</b>\n'
+        f' └ 💵 Qolgan balans: <b>{user_balances[user_id]:,} so\'m</b>\n\n'
+        '⚡ 5 daqiqa ichida yetkazib beriladi!'
     )
     kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="◀️ Bosh menyu", callback_data="back_main")]])
     
@@ -259,7 +280,6 @@ async def check_doc_rejected(message: types.Message):
     )
     await message.answer(text, parse_mode="HTML")
 
-# Boshqa narsa yuborilganda
 @dp.message(OrderState.waiting_for_check)
 async def check_other_rejected(message: types.Message):
     await message.answer("⚠️ Iltimos, to'lov chekining rasmini yuboring.")
@@ -269,7 +289,7 @@ async def back_main_btn(call: CallbackQuery, state: FSMContext):
     await state.clear()
     await call.message.edit_text("💎 Nima olasiz, tanlang:", reply_markup=get_main_menu())
 
-# ================= RENDER UCHUN VEB-PORT =================
+# ================= RENDER VEB-SERVERI =================
 async def handle(request):
     return web.Response(text="Bot is running!")
 
