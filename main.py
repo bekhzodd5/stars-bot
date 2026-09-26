@@ -12,7 +12,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQu
 logging.basicConfig(level=logging.INFO)
 
 # ================= SOZLAMALAR =================
-BOT_TOKEN = "8982437206:AAHG7cnaU_QkX9eCyW_d6SVhOv5bGnm4M_s"
+BOT_TOKEN = "8982437206:AAEegwkmLXR28Fz01cfyOH6w9LNxxQsYuTM"
 ADMIN_USERNAME = "rymbyvv"
 CHANNEL_URL = "https://t.me/rymbyvv_otziv"
 CARD_NUMBER = "9860 3566 3465 1745"
