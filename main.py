@@ -70,8 +70,8 @@ async def topup_handler(call: CallbackQuery):
     ])
     await call.message.edit_text(
         "⚡ <b>Hisobni to'ldirish</b>\n\n"
-        f"💳 Karta: <code>{CARD_NUMBER}</code>\n"
-        f"👤 Egasi: <b>{CARD_NAME}</b>\n\n"
+        f"💳 Karta: <code>{9860 3566 3465 1745}</code>\n"
+        f"👤 Egasi: <b>{Elvira Kuralova}</b>\n\n"
         "⚠️ <b>Diqqat:</b> Ushbu rekvizitga to'lov qilish uchun sizda <b>5 daqiqa</b> vaqt bor!\n"
         "To'lovni amalga oshirgach, chekni adminga yuboring, hisobingiz darhol to'ldirib beriladi.",
         reply_markup=kb,
