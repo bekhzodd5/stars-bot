@@ -6,7 +6,7 @@ from aiogram.filters import CommandStart
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 # Sizning bot tokeningiz joylandi:
-BOT_TOKEN = "8982437206:AAF4KkriZqLzYG10X-OjPhxwouKcQoKpGRA"
+BOT_TOKEN = "8982437206:AAFuUkuaAYESseNzo9iMDmZHK9dqKn2GU7g"
 ADMIN_USERNAME = "rymbyvv"
 
 bot = Bot(token=BOT_TOKEN)
