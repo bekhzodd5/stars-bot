@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 
 # ================= SOZLAMALAR =================
 # BotFather'dan olingan aniq tokenni qo'ying
-BOT_TOKEN = os.environ.get("BOT_TOKEN", "8982437206:AAEegwkmLXR28Fz01cfyOH6w9LNxxQsYuTM")
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "8982437206:AAG2F8QRSJA_akGEK6oFiiVd1kxmKiZxjuk")
 ADMIN_USERNAME = "rymbyvv"
 CHANNEL_URL = "https://t.me/rymbyvv_otziv"
 CARD_NUMBER = "9860 3566 3465 1745"
