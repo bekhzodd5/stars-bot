@@ -231,8 +231,8 @@ async def start_topup(call: CallbackQuery, state: FSMContext):
     buttons = [[InlineKeyboardButton(text="◀️ Bekor qilish", callback_data="back_main")]]
     text = (
         "⚡ <b>Hisobni to'ldirish</b>\n\n"
-        f"💳 Karta: <code>{9860356634651745}</code>\n"
-        f"👤 Egasi: <b>{Elvira Kuralova}</b>\n\n"
+        f"💳 Karta: <code>{CARD_NUMBER}</code>\n"
+        f"👤 Egasi: <b>{CARD_NAME}</b>\n\n"
         "⚠️ <b>To'lovni amalga oshirib, chek skrinshotini (rasmini) shu yerga yuboring!</b>\n"
         "<i>(Faqat rasm qabul qilinadi, PDF hujjatlar o'tmaydi)</i>"
     )
