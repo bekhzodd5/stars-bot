@@ -11,13 +11,13 @@ logging.basicConfig(level=logging.INFO)
 # ================= SOZLAMALAR =================
 BOT_TOKEN = "8982437206:AAHG7cnaU_QkX9eCyW_d6SVhOv5bGnm4M_s"
 ADMIN_USERNAME = "rymbyvv"
-CARD_NUMBER = "9860 3566 3465 1745"  
-CARD_NAME = "Elvira Kuralova"             
+CARD_NUMBER = "9860 3566 3465 1745"
+CARD_NAME = "Elvira Kuralova."
 
-bot = Bot(token=BOT_TOKEN)
+bot = Bot(token=8982437206:AAHG7cnaU_QkX9eCyW_d6SVhOv5bGnm4M_s)
 dp = Dispatcher()
 
-# Foydalanuvchilar balansi (Oddiy saqlash tizimi)
+# Foydalanuvchilar balansi
 user_balances = {}
 
 def get_balance(user_id):
@@ -30,18 +30,22 @@ def main_menu(user_id):
         [InlineKeyboardButton(text="⭐ Telegram Stars", callback_data="cat_stars")],
         [InlineKeyboardButton(text="💎 Telegram Premium", callback_data="cat_premium")],
         [InlineKeyboardButton(text="🎁 Telegram Gifts", callback_data="cat_gifts")],
-        [InlineKeyboardButton(text=f"💰 Hisobim: {bal:,} so'm", callback_data="my_balance")],
+        [InlineKeyboardButton(text="💰 Hisobim: " + str(bal) + " so'm", callback_data="my_balance")],
         [InlineKeyboardButton(text="💳 Hisobni to'ldirish", callback_data="topup_balance")],
-        [InlineKeyboardButton(text="👨‍💻 Admin bilan aloqa", url=f"https://t.me/{ADMIN_USERNAME}")]
+        [InlineKeyboardButton(text="👨‍💻 Admin bilan aloqa", url="https://t.me/" + ADMIN_USERNAME)]
     ])
     return kb
 
 @dp.message(CommandStart())
 async def start_handler(message: types.Message):
-    await message.answer(
-        f"👋 Salom, <b>{message.from_user.first_name}</b>!\n\n"
+    user_name = message.from_user.first_name or "Mijoz"
+    text = (
+        "👋 Salom, <b>" + user_name + "</b>!\n\n"
         "🌟 <b>Star Bozor O'z</b> rasmiy botiga xush kelibsiz.\n"
-        "Bu yerda Stars, Premium va Giftlarni to'g'ridan-to'g'ri xarid qilishingiz mumkin.",
+        "Bu yerda Stars, Premium va Giftlarni sotib olishingiz mumkin."
+    )
+    await message.answer(
+        text,
         reply_markup=main_menu(message.from_user.id),
         parse_mode="HTML"
     )
@@ -50,33 +54,35 @@ async def start_handler(message: types.Message):
 @dp.callback_query(F.data == "my_balance")
 async def balance_handler(call: CallbackQuery):
     bal = get_balance(call.from_user.id)
+    u_name = call.from_user.username if call.from_user.username else "Mavjud emas"
+    u_id = str(call.from_user.id)
+
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="💳 To'ldirish", callback_data="topup_balance")],
         [InlineKeyboardButton(text="◀️ Orqaga", callback_data="back_main")]
     ])
-    await call.message.edit_text(
-        f"👤 Profilingiz: @{call.from_user.username or 'Mavjud emas'}\n"
-        f"🆔 ID: <code>{call.from_user.id}</code>\n"
-        f"💵 Balansingiz: <b>{bal:,} so'm</b>",
-        reply_markup=kb,
-        parse_mode="HTML"
+    
+    text = (
+        "👤 Profilingiz: @" + u_name + "\n"
+        "🆔 ID: <code>" + u_id + "</code>\n"
+        "💵 Balansingiz: <b>" + str(bal) + " so'm</b>"
     )
+    await call.message.edit_text(text, reply_markup=kb, parse_mode="HTML")
 
 @dp.callback_query(F.data == "topup_balance")
 async def topup_handler(call: CallbackQuery):
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="✅ To'lov qildim (Chek yuborish)", url=f"https://t.me/{rymbyvv}")],
+        [InlineKeyboardButton(text="✅ To'lov qildim (Chek yuborish)", url="https://t.me/" + ADMIN_USERNAME)],
         [InlineKeyboardButton(text="◀️ Orqaga", callback_data="back_main")]
     ])
-    await call.message.edit_text(
+    text = (
         "⚡ <b>Hisobni to'ldirish</b>\n\n"
-        f"💳 Karta: <code>{9860 3566 3465 1745}</code>\n"
-        f"👤 Egasi: <b>{Elvira Kuralova}</b>\n\n"
+        "💳 Karta: <code>" 9860 3566 3465 1745 "</code>\n"
+        "👤 Egasi: <b>" Elvira Kuralova "</b>\n\n"
         "⚠️ <b>Diqqat:</b> Ushbu rekvizitga to'lov qilish uchun sizda <b>5 daqiqa</b> vaqt bor!\n"
-        "To'lovni amalga oshirgach, chekni adminga yuboring, hisobingiz darhol to'ldirib beriladi.",
-        reply_markup=kb,
-        parse_mode="HTML"
+        "To'lovni amalga oshirgach, chekni adminga yuboring, hisobingiz to'ldirib beriladi."
     )
+    await call.message.edit_text(text, reply_markup=kb, parse_mode="HTML")
 
 # ================= BO'LIMLAR =================
 @dp.callback_query(F.data == "cat_stars")
@@ -115,8 +121,9 @@ async def gifts_handler(call: CallbackQuery):
 # ================= XARID QILISH =================
 @dp.callback_query(F.data.startswith("buy_item:"))
 async def process_buy(call: CallbackQuery):
-    _, item_name, price = call.data.split(":")
-    price = int(price)
+    parts = call.data.split(":")
+    item_name = parts[1]
+    price = int(parts[2])
     user_id = call.from_user.id
     bal = get_balance(user_id)
 
@@ -126,29 +133,28 @@ async def process_buy(call: CallbackQuery):
             [InlineKeyboardButton(text="◀️ Orqaga", callback_data="back_main")]
         ])
         await call.answer("Mablag' yetarli emas!", show_alert=True)
-        await call.message.edit_text(
-            f"❌ <b>Hisobingizda yetarli mablag' mavjud emas!</b>\n\n"
-            f"Tanlangan mahsulot: <b>{item_name}</b>\n"
-            f"Narxi: <b>{price:,} so'm</b>\n"
-            f"Sizning balansingiz: <b>{bal:,} so'm</b>\n\n"
-            "Xarid qilish uchun avval hisobingizni to'ldiring.",
-            reply_markup=kb,
-            parse_mode="HTML"
+        text = (
+            "❌ <b>Hisobingizda yetarli mablag' yo'q!</b>\n\n"
+            "Mahsulot: <b>" + item_name + "</b>\n"
+            "Narxi: <b>" + str(price) + " so'm</b>\n"
+            "Balansingiz: <b>" + str(bal) + " so'm</b>\n\n"
+            "Xarid uchun avval hisobingizni to'ldiring."
         )
+        await call.message.edit_text(text, reply_markup=kb, parse_mode="HTML")
     else:
-        user_balances[user_id] -= price
+        user_balances[user_id] = bal - price
+        new_bal = user_balances[user_id]
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="◀️ Bosh sahifa", callback_data="back_main")]
         ])
-        await call.message.edit_text(
-            f"✅ <b>Xarid muvaffaqiyatli amalga oshirildi!</b>\n\n"
-            f"Mahsulot: <b>{item_name}</b>\n"
-            f"Hisobingizdan yechildi: <b>{price:,} so'm</b>\n"
-            f"Qolgan balans: <b>{user_balances[user_id]:,} so'm</b>\n\n"
-            "Mahsulot 5 daqiqa ichida yetkaziladi!",
-            reply_markup=kb,
-            parse_mode="HTML"
+        text = (
+            "✅ <b>Xarid muvaffaqiyatli amalga oshirildi!</b>\n\n"
+            "Mahsulot: <b>" + item_name + "</b>\n"
+            "Yechildi: <b>" + str(price) + " so'm</b>\n"
+            "Qoldiq balans: <b>" + str(new_bal) + " so'm</b>\n\n"
+            "Mahsulot 5 daqiqa ichida profilingizga yetkaziladi!"
         )
+        await call.message.edit_text(text, reply_markup=kb, parse_mode="HTML")
 
 @dp.callback_query(F.data == "back_main")
 async def back_to_main(call: CallbackQuery):
@@ -160,7 +166,7 @@ async def back_to_main(call: CallbackQuery):
 
 # ================= RENDER UCHUN VEB-PORT =================
 async def handle(request):
-    return web.Response(text="Bot muvaffaqiyatli ishlamoqda!")
+    return web.Response(text="Bot is running!")
 
 async def main():
     app = web.Application()
@@ -171,7 +177,7 @@ async def main():
     site = web.TCPSite(runner, '0.0.0.0', port)
     await site.start()
 
-   
+    # Eski ulanishlarni tozalash
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
