@@ -1705,9 +1705,9 @@ async def process_deposit_amount(message, state):
     payment_timer = editable_text("payment_timer", "Bu oyna <b>5 daqiqa</b> amal qiladi.", user_id)
     payment_keep_receipt = editable_text("payment_keep_receipt", "Chekni saqlab qo'ying.", user_id)
 
-    card_text = (
-        f"<blockquote>{custom_tag('deposit')}<b>{payment_card_label}</b> <code>{9860 3566 3465 1745}</code>\n"
-        f"<b>{payment_owner_label}</b> {Elvira.k}\n\n"
+card_text = (
+        f"<blockquote>{custom_tag('deposit')}<b>{payment_card_label}</b> <code>9860 3566 3465 1745</code>\n"
+        f"<b>{payment_owner_label}</b> Elvira.k\n\n"
         f"{payment_transfer}\n\n"
         f"{payment_done_instruction}\n\n"
         f"{payment_timer}\n\n"
