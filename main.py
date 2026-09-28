@@ -45,15 +45,18 @@ def default_prices():
             str(s): int(s * 220)
             for s in range(50, 951, 50)
         },
-        "gifts": {
-            "gift_13_1": 2700,
-            "gift_13_2": 2700,
-            "gift_21_1": 4600,
-            "gift_21_2": 4600,
-            "gift_43_1": 9000,
-            "gift_43_2": 9000,
-            "gift_85_1": 18000
-            "gift_85_2": 18000
+   gifts_info = {
+        "gift_13_1": 13,
+        "gift_13_2": 13,
+        "gift_21_1": 21,
+        "gift_21_2": 21,
+        "gift_43_1": 43,
+        "gift_43_2": 43,
+        "gift_85_1": 85,
+        "gift_85_2": 85,
+        "gift_50_1": 50,
+        "gift_100_1": 100
+    }
         },
         "premium": {
             "prem_1": 45000,
