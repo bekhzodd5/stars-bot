@@ -5,6 +5,7 @@ import os
 import re
 from datetime import datetime
 
+from aiohttp import web
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
@@ -15,7 +16,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 
 
-BOT_TOKEN = os.getenv("BOT_TOKEN", "8982437206:AAHH1J5sxFMo7YkCaU2jpk_PQgMT_-P5Q3Q")
+BOT_TOKEN = os.getenv("BOT_TOKEN", "8982437206:AAG2F8QRSJA_akGEK6oFiiVd1kxmKiZxjuk")
 
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN ko'rsatilmagan!")
@@ -102,7 +103,7 @@ def default_prices():
             "uz": {
                 "main_title": "💎 Asosiy menyu",
                 "main_trust": "🤝 Biz bilan ishonchli savdo qiling",
-                "main_channel": "@vip_goldeen kanalidagi yangiliklarni kuzatib boring",
+                "main_channel": "@rymbyvv_otziv kanalidagi yangiliklarni kuzatib boring",
                 "main_hint": "👇 Kerakli xizmatni tanlang",
                 "deposit_title": "💰 Hisob to'ldirish",
                 "deposit_prompt": "Hisobingizni qanchaga to'ldirmoqchisiz?",
@@ -124,7 +125,7 @@ def default_prices():
             "ru": {
                 "main_title": "💎 Главное меню",
                 "main_trust": "🤝 Совершайте покупки с нами безопасно",
-                "main_channel": "Следите за новостями канала @vip_goldeen",
+                "main_channel": "Следите за новостями канала @rymbyvv_otziv",
                 "main_hint": "👇 Выберите нужную услугу",
                 "deposit_title": "💰 Пополнение счёта",
                 "deposit_prompt": "На какую сумму хотите пополнить счёт?",
@@ -586,7 +587,7 @@ def get_bottom_reply_keyboard(user_id=0):
 def main_menu_text(user_id=0):
     title = editable_text("main_title", tr(user_id, "main_title"), user_id)
     trust = editable_text("main_trust", tr(user_id, "main_trust"), user_id)
-    channel = editable_text("main_channel", "@vip_goldeen kanalidagi yangiliklarni kuzatib boring", user_id)
+    channel = editable_text("main_channel", "@rymbyvv_otziv kanalidagi yangiliklarni kuzatib boring", user_id)
     hint = editable_text("main_hint", tr(user_id, "main_hint"), user_id)
     return (
         f"<blockquote><b>{menu_emoji('main_title','💎')} {title.replace('💎 ','')}</b>\n\n"
@@ -1610,7 +1611,7 @@ async def bottom_refresh_handler(message, state):
     unsub = await check_all_subs(user_id)
     if unsub:
         msg = await message.answer(
-            "<blockquote>📢 <b>Avval @vip_goldeen kanaliga obuna bo'ling.</b>\n\nObuna bo'lgach, tekshirish tugmasini bosing.</blockquote>",
+            "<blockquote>📢 <b>Avval @rymbyvv_otziv kanaliga obuna bo'ling.</b>\n\nObuna bo'lgach, tekshirish tugmasini bosing.</blockquote>",
             reply_markup=get_sub_keyboard(unsub)
         )
         last_menu_messages[user_id] = msg.message_id
@@ -1632,7 +1633,7 @@ async def check_sub_callback(callback):
         await callback.answer("✅ Obuna tasdiqlandi!")
     else:
         await callback.answer(
-            "❌ Вы ещё не подписались на @vip_goldeen!" if lang(callback.from_user.id) == "ru" else "❌ @vip_goldeen kanaliga hali obuna bo'lmagansiz!",
+            "❌ Вы ещё не подписались на @rymbyvv_otziv!" if lang(callback.from_user.id) == "ru" else "❌ @rymbyvv_otziv kanaliga hali obuna bo'lmagansiz!",
             show_alert=True
         )
 
@@ -1643,7 +1644,7 @@ async def back_to_main(callback, state):
     unsub = await check_all_subs(callback.from_user.id)
     if unsub:
         await callback.message.edit_text(
-            "<blockquote>📢 <b>Botdan foydalanish uchun @vip_goldeen kanaliga obuna bo'ling.</b></blockquote>",
+            "<blockquote>📢 <b>Botdan foydalanish uchun @rymbyvv_otziv kanaliga obuna bo'ling.</b></blockquote>",
             reply_markup=get_sub_keyboard(unsub)
         )
     else:
@@ -2684,7 +2685,22 @@ async def admin_order_cancel(callback):
     await callback.answer("Bekor qilindi va pul qaytarildi!")
 
 
+async def dummy_handler(request):
+    return web.Response(text="Bot ishlamoqda!")
+
+
+async def start_web_server():
+    app = web.Application()
+    app.router.add_get("/", dummy_handler)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    port = int(os.getenv("PORT", 8080))
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+
+
 async def main():
+    await start_web_server()
     await dp.start_polling(bot)
 
 
