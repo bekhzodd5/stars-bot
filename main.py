@@ -1686,10 +1686,10 @@ async def process_deposit_amount(message, state):
         await safe_delete(msg)
         return
 
-    amount = int(message.text)
-    if amount < 1000 or amount 22.500> :
+ amount = int(message.text)
+    if amount < 1000:
         msg = await message.answer(
-            "<blockquote>❌ Miqdor 1.000 so'mdan kam bolmasin !</blockquote>"
+            "<blockquote>❌ Minimal to'ldirish miqdori — <b>1.000 so'm</b>!</blockquote>"
         )
         await asyncio.sleep(2)
         await safe_delete(msg)
