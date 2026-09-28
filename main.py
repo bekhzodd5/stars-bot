@@ -15,10 +15,10 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 
 
-BOT_TOKEN = os.getenv("BOT_TOKEN", )
+BOT_TOKEN = os.getenv("BOT_TOKEN", "8982437206:AAG2F8QRSJA_akGEK6oFiiVd1kxmKiZxjuk")
 
 if not BOT_TOKEN:
-    raise RuntimeError(""8982437206:AAG2F8QRSJA_akGEK6oFiiVd1kxmKiZxjuk"")
+    raise RuntimeError("BOT_TOKEN ko'rsatilmagan!")
 
 ADMIN_ID = 7414653407
 ADMIN_USERNAME = "@rymbyvv"
@@ -188,29 +188,15 @@ def load_data():
                     for key in defaults[group]:
                         if key in saved_prices[group]:
                             try:
-                                defaults[group][key] = int(
-                                    saved_prices[group][key]
-                                )
+                                defaults[group][key] = int(saved_prices[group][key])
                             except Exception:
                                 pass
 
             return {
-                "user_balances": {
-                    int(k): int(v)
-                    for k, v in data.get("user_balances", {}).items()
-                },
-                "user_stars_balances": {
-                    int(k): float(v)
-                    for k, v in data.get("user_stars_balances", {}).items()
-                },
-                "user_referrals": {
-                    int(k): int(v)
-                    for k, v in data.get("user_referrals", {}).items()
-                },
-                "registered_users": set(
-                    int(k)
-                    for k in data.get("registered_users", [])
-                ),
+                "user_balances": {int(k): int(v) for k, v in data.get("user_balances", {}).items()},
+                "user_stars_balances": {int(k): float(v) for k, v in data.get("user_stars_balances", {}).items()},
+                "user_referrals": {int(k): int(v) for k, v in data.get("user_referrals", {}).items()},
+                "registered_users": set(int(k) for k in data.get("registered_users", [])),
                 "verified_phones": {str(k): str(v) for k, v in data.get("verified_phones", {}).items()},
                 "user_languages": {str(k): str(v) for k, v in data.get("user_languages", {}).items()},
                 "user_join_dates": {str(k): str(v) for k, v in data.get("user_join_dates", {}).items()},
@@ -386,10 +372,6 @@ def editable_text(key, fallback="", user_id=0):
     return str(fallback)
 
 
-def editable_text_localized(user_id, key, fallback=""):
-    return editable_text(key, fallback, user_id)
-
-
 def menu_emoji(key, fallback):
     eid = menu_emojis.get(key)
     return f'<tg-emoji emoji-id="{eid}">{fallback}</tg-emoji>' if eid else fallback
@@ -501,9 +483,10 @@ def build_products():
     premium = {}
     for key, title in premium_names.items():
         p = prices["premium"][key]
+        clean_title = title.replace("💎 ", "")
         premium[key] = {
             "name": f"{title} - {money(p)} so'm",
-            "formatted": f'{EMOJI_PREMIUM_HTML} {title.replace("💎 ", "")} - {money(p)} so'm',
+            "formatted": f"{EMOJI_PREMIUM_HTML} {clean_title} - {money(p)} so'm",
             "price": int(p)
         }
 
@@ -629,10 +612,7 @@ async def safe_delete(message):
 async def delete_previous_menu(user_id):
     if user_id in last_menu_messages:
         try:
-            await bot.delete_message(
-                chat_id=user_id,
-                message_id=last_menu_messages[user_id]
-            )
+            await bot.delete_message(chat_id=user_id, message_id=last_menu_messages[user_id])
         except Exception:
             pass
         last_menu_messages.pop(user_id, None)
@@ -854,11 +834,17 @@ async def text_edit_start(callback, state):
         return
     await state.update_data(text_key=key, text_lang=code)
     current = texts[code][key]
-    lang_name = "O`zbekcha" if code == "uz" else "Русский"
-    await callback.message.edit_text(
-        f"<b>📝 Textni tahrirlash</b>\n\n🌐 Til: <b>{lang_name}</b>\n🔑 <code>{key}</code>\n\nHozirgi matn:\n<blockquote>{current}</blockquote>\n\nYangi textni yuboring. Bir nechta qator yuborishingiz mumkin.",
-        reply_markup=back_main_keyboard(ADMIN_ID)
+    lang_name = "O'zbekcha" if code == "uz" else "Русский"
+    
+    text_content = (
+        "<b>📝 Textni tahrirlash</b>\n\n"
+        f"🌐 Til: <b>{lang_name}</b>\n"
+        f"🔑 <code>{key}</code>\n\n"
+        "Hozirgi matn:\n"
+        f"<blockquote>{current}</blockquote>\n\n"
+        "Yangi textni yuboring. Bir nechta qator yuborishingiz mumkin."
     )
+    await callback.message.edit_text(text_content, reply_markup=back_main_keyboard(ADMIN_ID))
     await state.set_state(AdminState.waiting_for_text)
     await callback.answer()
 
