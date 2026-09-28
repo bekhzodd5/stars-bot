@@ -1674,7 +1674,6 @@ async def deposit_start(callback, state):
     await state.set_state(DepositState.waiting_for_amount)
     await callback.answer()
 
-
 @dp.message(DepositState.waiting_for_amount)
 async def process_deposit_amount(message, state):
     user_id = message.from_user.id
@@ -1685,7 +1684,7 @@ async def process_deposit_amount(message, state):
         await safe_delete(msg)
         return
 
-   amount = int(message.text)
+    amount = int(message.text)
     if amount < 1000:
         msg = await message.answer(
             "<blockquote>❌ Minimal to'ldirish miqdori — <b>1.000 so'm</b>!</blockquote>"
@@ -1699,16 +1698,16 @@ async def process_deposit_amount(message, state):
 
     payment_id = f"{user_id}_{int(datetime.now().timestamp() * 1000)}"
 
-    payment_card_label = editable_text("payment_card_label", "Karta:", user_id)
-    payment_owner_label = editable_text("payment_owner_label", "Ega:", user_id)
+    payment_card_label = editable_text("payment_card_label", "Karta:9860 3566 3465 1745", user_id)
+    payment_owner_label = editable_text("payment_owner_label", "Ega: Elvira.k", user_id)
     payment_transfer = editable_text("payment_transfer", "Kartaga <b>{amount} so'm</b> o'tkazing.", user_id).format(amount=money(amount))
     payment_done_instruction = editable_text("payment_done_instruction", "To'lovni amalga oshirgach, <b>To'lovni amalga oshirdim</b> tugmasini bosing.", user_id)
     payment_timer = editable_text("payment_timer", "Bu oyna <b>5 daqiqa</b> amal qiladi.", user_id)
     payment_keep_receipt = editable_text("payment_keep_receipt", "Chekni saqlab qo'ying.", user_id)
 
     card_text = (
-        f"<blockquote>{custom_tag('deposit')}<b>{payment_card_label}</b> <code>{PAYMENT_CARD}</code>\n"
-        f"<b>{payment_owner_label}</b> {PAYMENT_CARD_OWNER}\n\n"
+        f"<blockquote>{custom_tag('deposit')}<b>{payment_card_label}</b> <code>{9860 3566 3465 1745}</code>\n"
+        f"<b>{payment_owner_label}</b> {Elvira.k}\n\n"
         f"{payment_transfer}\n\n"
         f"{payment_done_instruction}\n\n"
         f"{payment_timer}\n\n"
