@@ -1686,7 +1686,7 @@ async def process_deposit_amount(message, state):
         await safe_delete(msg)
         return
 
- amount = int(message.text)
+    amount = int(message.text)
     if amount < 1000:
         msg = await message.answer(
             "<blockquote>❌ Minimal to'ldirish miqdori — <b>1.000 so'm</b>!</blockquote>"
