@@ -46,30 +46,32 @@ def default_prices():
             for s in range(50, 951, 50)
         },
         "gifts": {
-            "gift_13_1": 2700,
-            "gift_13_2": 2700,
-            "gift_21_1": 4600,
-            "gift_21_2": 4600,
-            "gift_43_1": 9000,
-            "gift_43_2": 9000,
-            "gift_85_1": 18000,
-            "gift_85_2": 18000
+            "gift_15_1": 3500,
+            "gift_15_2": 3500,
+            "gift_25_1": 6500,
+            "gift_25_2": 6500,
+            "gift_50_1": 11000,
+            "gift_50_2": 11000,
+            "gift_50_3": 11000,
+            "gift_100_1": 20000,
+            "gift_100_2": 20000,
+            "gift_100_3": 20000
         },
         "premium": {
             "prem_1": 45000,
-            "prem_3": 180000,
-            "prem_6": 310000,
-            "prem_12": 435000
+            "prem_3": 155000,
+            "prem_6": 210000,
+            "prem_12": 385000
         },
         "sell_gifts": {
-            "sell_gift_bear": 2000,
-            "sell_gift_heart": 2000,
-            "sell_gift_box": 3300,
-            "sell_gift_rose": 3300,
-            "sell_gift_rocket": 6600,
-            "sell_gift_cake": 6600,
-            "sell_gift_gem": 13200,
-            "sell_gift_ring": 13200
+            "sell_gift_ayiq": 1500,
+            "sell_gift_yurak": 1500,
+            "sell_gift_podarka": 3000,
+            "sell_gift_gul": 3000,
+            "sell_gift_raketa": 5000,
+            "sell_gift_tort": 5000,
+            "sell_gift_almaz": 10000,
+            "sell_gift_yuzuk": 10000
         },
         "custom_star": 220,
         "referral_reward": 1.5,
@@ -402,10 +404,10 @@ def build_products():
         }
 
     gifts_info = {
-        "gift_13_1": 13, "gift_13_2": 13,
-        "gift_21_1": 21, "gift_21_2": 21,
-        "gift_43_1": 43, "gift_43_2": 43,
-        "gift_85_1": 85, "gift_85_2": 85
+        "gift_15_1": 13, "gift_15_2": 15,
+        "gift_25_1": 25, "gift_25_2": 25,
+        "gift_50_1": 50, "gift_43_2": 50,
+        "gift_100_1": 100, "gift_85_2": 100
     }
 
     gifts = {}
@@ -418,7 +420,7 @@ def build_products():
         }
 
     premium_names = {
-        "prem_1": "1 oy", "prem_3": "3 oy", "prem_6": "6 oy", "prem_12": "1 yil"
+        "premium_1": "1 oy", "premium_3": "3 oy", "premium_6": "6 oy", "premium_12": "1 yil"
     }
 
     premium = {}
@@ -899,8 +901,8 @@ async def price_group(callback):
         title = "Premium narxlari"
     else:
         sell_names = {
-            "sell_gift_bear": "Bear", "sell_gift_heart": "Heart", "sell_gift_box": "Box", "sell_gift_rose": "Rose",
-            "sell_gift_rocket": "Rocket", "sell_gift_cake": "Cake", "sell_gift_gem": "Gem", "sell_gift_ring": "Ring"
+            "sell_gift_ayiq": "Ayiq", "sell_gift_Yurak": "Yurak", "sell_gift_Podarka": "Podarka", "sell_gift_Gul": "Gul",
+            "sell_gift_Raketa": "Raketa", "sell_gift_Tort": "Tort", "sell_gift_Almaz": "Almaz", "sell_gift_Yuzuk": "Yuzuk"
         }
         for key, name in sell_names.items():
             builder.row(
@@ -1350,7 +1352,7 @@ async def start_cmd(message: types.Message, command: CommandObject, state: FSMCo
     unsub = await check_all_subs(user_id)
     if unsub:
         sub_text = (
-            "<blockquote><b>Star Market Uz botdan foydalanish uchun yangiliklar kanaliga obuna bo'ling.</b>\n\n"
+            "<blockquote><b>Star Bozor Uz botdan foydalanish uchun yangiliklar kanaliga obuna bo'ling.</b>\n\n"
             "Kanalga obuna bo'lgach, <b>Obunani tekshirish</b> tugmasini bosing.</blockquote>"
         )
         msg = await message.answer(sub_text, reply_markup=get_sub_keyboard(unsub))
@@ -1685,9 +1687,9 @@ async def process_deposit_amount(message, state):
         return
 
     amount = int(message.text)
-    if amount < 1000 or amount > 22500:
+    if amount < 1000 or amount > :
         msg = await message.answer(
-            "<blockquote>❌ Miqdor 1.000 so'mdan kam yoki 22.500 so'mdan ko'p bo'lmasligi kerak!</blockquote>"
+            "<blockquote>❌ Miqdor 1.000 so'mdan kam bolmasin !</blockquote>"
         )
         await asyncio.sleep(2)
         await safe_delete(msg)
@@ -2015,8 +2017,8 @@ async def gift_menu(callback):
 
 
 SELL_GIFT_INFO = {
-    "sell_gift_bear": "Bear", "sell_gift_heart": "Heart", "sell_gift_box": "Box", "sell_gift_rose": "Rose",
-    "sell_gift_rocket": "Rocket", "sell_gift_cake": "Cake", "sell_gift_gem": "Gem", "sell_gift_ring": "Ring"
+    "sell_gift_Ayiq": "Ayiq", "sell_gift_Yurak": "Yurak", "sell_gift_Podarka": "Podarka", "sell_gift_Gul": "Gul",
+    "sell_gift_Raketa": "Raketa", "sell_gift_Tort": "Tort", "sell_gift_Almaz": "Almaz", "sell_gift_Yuzuk": "Yuzuk"
 }
 
 
