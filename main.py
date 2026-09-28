@@ -394,41 +394,44 @@ def add_star_referral(user_id):
 
 def build_products():
     stars = {}
-    for s in range(50, 951, 50):
-        p = prices["stars"].get(str(s), s * 220)
-        stars[f"stars_{s}"] = {
-            "name": f"{s} Stars - {money(p)} so'm",
-            "formatted": f"{custom_tag('stars')}<b>{s} Stars</b> - {money(p)} so'm",
+    for s_str, p in prices["stars"].items():
+        stars[f"stars_{s_str}"] = {
+            "name": f"⭐ {s_str} - {money(p)} so'm",
+            "formatted": f"{custom_tag('stars')}<b>{s_str} Stars</b> - {money(p)} so'm",
             "price": int(p),
-            "count": s
+            "count": int(s_str)
         }
 
     gifts_info = {
-        "gift_15_1": 13, "gift_15_2": 15,
-        "gift_25_1": 25, "gift_25_2": 25,
-        "gift_50_1": 50, "gift_43_2": 50,
-        "gift_100_1": 100, "gift_85_2": 100
+        "gift_15": ("", "15 talik Gift (13 stars)"),
+        "gift_25": ("", "25 talik Gift (21 stars)"),
+        "gift_50": ("", "50 talik Gift (43 stars)"),
+        "gift_100": ("", "100 talik Gift (83/85 stars)")
     }
 
     gifts = {}
-    for key, count in gifts_info.items():
-        p = prices["gifts"][key]
+    for key, (emoji, title) in gifts_info.items():
+        p = prices["gifts"].get(key, 0)
         gifts[key] = {
-            "name": f"{count} stars - {money(p)} so'm",
-            "formatted": f"{custom_tag(key)}{count} stars - {money(p)} so'm",
+            "name": f"{emoji} {title} - {money(p)} so'm",
+            "formatted": f"{custom_tag(key)}{title} - {money(p)} so'm",
             "price": int(p)
         }
 
     premium_names = {
-        "premium_1": "1 oy", "premium_3": "3 oy", "premium_6": "6 oy", "premium_12": "1 yil"
+        "prem_3": " 3 oy",
+        "prem_6": " 6 oy",
+        "prem_12": " 1 yil",
+        "prem_1": " 1 oy"
     }
 
     premium = {}
     for key, title in premium_names.items():
-        p = prices["premium"][key]
+        p = prices["premium"].get(key, 0)
+        clean_title = title.replace("💎 ", "")
         premium[key] = {
             "name": f"{title} - {money(p)} so'm",
-            "formatted": f"{custom_tag(key)}<b>{title}</b> - {money(p)} so'm",
+            "formatted": f"{custom_tag(key)}<b>{clean_title}</b> - {money(p)} so'm",
             "price": int(p)
         }
 
