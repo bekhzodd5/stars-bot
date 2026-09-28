@@ -1687,7 +1687,7 @@ async def process_deposit_amount(message, state):
         return
 
     amount = int(message.text)
-    if amount < 1000 or amount 1000000> :
+    if amount < 1000 or amount 22.500> :
         msg = await message.answer(
             "<blockquote>❌ Miqdor 1.000 so'mdan kam bolmasin !</blockquote>"
         )
