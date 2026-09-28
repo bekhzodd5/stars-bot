@@ -16,7 +16,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 
 
-BOT_TOKEN = os.getenv("BOT_TOKEN", "8982437206:AAHaoK7fzdF9UCnXaBFtlvleUxUUaD_ALRs")
+BOT_TOKEN = os.getenv("BOT_TOKEN", "8982437206:AAG2F8QRSJA_akGEK6oFiiVd1kxmKiZxjuk")
 
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN ko'rsatilmagan!")
@@ -35,29 +35,6 @@ bot = Bot(
 )
 
 dp = Dispatcher(storage=MemoryStorage())
-
-
-EMOJI_DEPOSIT_HTML = '<tg-emoji emoji-id="5305305558646041532">💰</tg-emoji>'
-EMOJI_STARS_HTML = '<tg-emoji emoji-id="4983746717313664194">⭐️</tg-emoji>'
-EMOJI_GIFT_HTML = '<tg-emoji emoji-id="5226661632259691727">🎁</tg-emoji>'
-EMOJI_PREMIUM_HTML = '<tg-emoji emoji-id="5461101215226019671">💎</tg-emoji>'
-EMOJI_COOL_HTML = '<tg-emoji emoji-id="5233239138450312962">😎</tg-emoji>'
-EMOJI_POINT_DOWN_HTML = '<tg-emoji emoji-id="5206707416065938614">👇</tg-emoji>'
-EMOJI_CARD_HTML = '<tg-emoji emoji-id="5443039344443008807">💳</tg-emoji>'
-EMOJI_TRANSFER_HTML = '<tg-emoji emoji-id="5305305558646041532">💰</tg-emoji>'
-EMOJI_WARN_HTML = '<tg-emoji emoji-id="5472027384393776037">⚠️</tg-emoji>'
-EMOJI_CART_CONFIRM = '<tg-emoji emoji-id="5427168083074628963">🛒</tg-emoji>'
-EMOJI_TARGET_LABEL = '<tg-emoji emoji-id="5231012545799666522">🎯</tg-emoji>'
-EMOJI_WAITING_PAY = '<tg-emoji emoji-id="5305244398311746134">⏳</tg-emoji>'
-EMOJI_CUSTOM_STARS_TITLE = '<tg-emoji emoji-id="4983746717313664194">💸</tg-emoji>'
-EMOJI_REF_LINK = '<tg-emoji emoji-id="5271974997521350631">🔗</tg-emoji>'
-EMOJI_REF_USERS = '<tg-emoji emoji-id="5458642217600040939">👥</tg-emoji>'
-EMOJI_ACCOUNT_TITLE = '<tg-emoji emoji-id="5305307774849171921">💳</tg-emoji>'
-EMOJI_BALANCE_LABEL = '<tg-emoji emoji-id="5271974997521350631">🔗</tg-emoji>'
-EMOJI_ADDED_HTML = '<tg-emoji emoji-id="5305531087378756468">🎉</tg-emoji>'
-EMOJI_APPROVED_HTML = '<tg-emoji emoji-id="5305357484800651517">💳</tg-emoji>'
-EMOJI_PRODUCT = '<tg-emoji emoji-id="5458488840022933066">📦</tg-emoji>'
-EMOJI_PRICE = '<tg-emoji emoji-id="4965663015211894662">💰</tg-emoji>'
 
 DEFAULT_PREMIUM_BUTTON_EMOJI_ID = "5364134765081423318"
 
@@ -108,34 +85,34 @@ def default_prices():
         "purchase_history": [],
         "texts": {
             "uz": {
-                "main_title": "💎 Asosiy menyu",
-                "main_trust": "🤝 Biz bilan ishonchli savdo qiling",
+                "main_title": "Asosiy menyu",
+                "main_trust": "Biz bilan ishonchli savdo qiling",
                 "main_channel": "@rymbyvv_otziv kanalidagi yangiliklarni kuzatib boring",
-                "main_hint": "👇 Kerakli xizmatni tanlang",
-                "deposit_title": "💰 Hisob to'ldirish",
+                "main_hint": "Kerakli xizmatni tanlang",
+                "deposit_title": "Hisob to'ldirish",
                 "deposit_prompt": "Hisobingizni qanchaga to'ldirmoqchisiz?",
-                "deposit_minmax": "🔹 Minimum: <b>1.000 so'm</b>",
-                "deposit_input": "✍️ Miqdorni yozing:",
-                "payment_card_label": "💳 <b>Karta: 9860 3566 3465 1745</b>",
-                "payment_owner_label": "👤 <b>Ega: Elvira Kuralova</b>",
-                "payment_transfer": "💰 Kartaga <b>{amount} so'm</b> o'tkazing.\n\n📸 <b>To'lov chekini (rasm/screenshot) shu yerga yuboring.</b>\n⏰ Vaqt: <b>5 daqiqa</b>.",
-                "profile_title": "👤 Profil", "language": "🌐 Til", "choose_lang": "Interfeys tilini tanlang:",
-                "referral_title": "👥 Referal tizimi", "contact_text": "Referal mukofotidan foydalanish uchun O'zbekiston (+998) yoki Rossiya (+7) raqamingizni yuboring."
+                "deposit_minmax": "Minimum: <b>1.000 so'm</b>",
+                "deposit_input": "Miqdorni yozing:",
+                "payment_card_label": "Karta:",
+                "payment_owner_label": "Ega:",
+                "payment_transfer": "Kartaga <b>{amount} so'm</b> o'tkazing.\n\nTo'lov chekini (rasm/screenshot) shu yerga yuboring.\nVaqt: <b>5 daqiqa</b>.",
+                "profile_title": "Profil", "language": "Til", "choose_lang": "Interfeys tilini tanlang:",
+                "referral_title": "Referal tizimi", "contact_text": "Referal mukofotidan foydalanish uchun O'zbekiston (+998) yoki Rossiya (+7) raqamingizni yuboring."
             },
             "ru": {
-                "main_title": "💎 Главное меню",
-                "main_trust": "🤝 Совершайте покупки с нами безопасно",
+                "main_title": "Главное меню",
+                "main_trust": "Совершайте покупки с нами безопасно",
                 "main_channel": "Следите за новостями канала @rymbyvv_otziv",
-                "main_hint": "👇 Выберите нужную услугу",
-                "deposit_title": "💰 Пополнение счёта",
+                "main_hint": "Выберите нужную услугу",
+                "deposit_title": "Пополнение счёта",
                 "deposit_prompt": "На какую сумму хотите пополнить счёт?",
-                "deposit_minmax": "🔹 Минимум: <b>1.000 сум</b>",
-                "deposit_input": "✍️ Введите сумму:",
-                "payment_card_label": "💳 <b>Карта:</b>",
-                "payment_owner_label": "👤 <b>Владелец:</b>",
-                "payment_transfer": "💰 Переведите на карту <b>{amount} сум</b>.\n\n📸 <b>Отправьте чек об оплате (скриншот).</b>\n⏰ Время: <b>5 минут</b>.",
-                "profile_title": "👤 Профиль", "language": "🌐 Язык", "choose_lang": "Выберите язык интерфейса:",
-                "referral_title": "👥 Реферальная система", "contact_text": "Для реферального вознаграждения отправьте номер Узбекистана (+998) или России (+7)."
+                "deposit_minmax": "Минимум: <b>1.000 сум</b>",
+                "deposit_input": "Введите сумму:",
+                "payment_card_label": "Карта:",
+                "payment_owner_label": "Владелец:",
+                "payment_transfer": "Переведите на карту <b>{amount} сум</b>.\n\nОтправьте чек об оплате (скриншот).\nВремя: <b>5 минут</b>.",
+                "profile_title": "Профиль", "language": "Язык", "choose_lang": "Выберите язык интерфейса:",
+                "referral_title": "Реферальная система", "contact_text": "Для реферального вознаграждения отправьте номер Узбекистана (+998) или России (+7)."
             }
         }
     }
@@ -309,49 +286,7 @@ def format_stars(value):
     return f"{float(value):g}"
 
 
-LANG_TEXT = {
-    "uz": {
-        "settings": "⚙️ Sozlamalar", "profile": "👤 Profil", "language": "🌐 Til", "choose_lang": "Interfeys tilini tanlang:",
-        "uzbek": "O'zbekcha 🇺🇿", "russian": "Русский 🇷🇺", "back": "⬅️ Orqaga", "refresh": "🔄 Yangilash",
-        "deposit": "Hisob to'ldirish", "stars": "Stars olish", "gift": "Gift olish", "premium": "Premium olish", "balance": "Hisobim",
-        "sell": "Gift sotish", "referral": "Referal tizimi", "top": "Top reyting", "admin": "Admin (Aloqa)", "settings_btn": "Sozlamalar",
-        "main_title": "💎 Asosiy menyu", "main_trust": "🤝 Biz bilan ishonchli savdo qiling", "main_hint": "👇 Kerakli xizmatni tanlang", "profile_title": "👤 Profil", "id": "ID", "username": "Username",
-        "joined": "A'zo bo'lingan", "language_label": "Til", "today": "Bugungi", "week": "Haftalik", "month": "Oylik", "top_buyers": "Top oluvchilar",
-        "no_data": "Hozircha reyting uchun ma'lumot yetarli emas.", "referral_title": "👥 Referal tizimi", "withdraw": "📤 Stars yechib olish",
-        "contact_title": "📱 Telefon raqamini tasdiqlash", "contact_text": "Referal mukofotidan foydalanish uchun O'zbekiston (+998) yoki Rossiya (+7) raqamingizni yuboring.",
-        "share_contact": "📱 Raqamni yuborish", "bad_phone": "❌ Faqat +998 yoki +7 raqamlariga ruxsat beriladi.", "phone_ok": "✅ Raqam tasdiqlandi."
-    },
-    "ru": {
-        "settings": "⚙️ Настройки", "profile": "👤 Профиль", "language": "🌐 Язык", "choose_lang": "Выберите язык интерфейса:",
-        "uzbek": "O'zbekcha 🇺🇿", "russian": "Русский 🇷🇺", "back": "⬅️ Назад", "refresh": "🔄 Обновить",
-        "deposit": "Пополнить счёт", "stars": "Купить Stars", "gift": "Купить Gift", "premium": "Купить Premium", "balance": "Мой счёт",
-        "sell": "Продать Gift", "referral": "Реферальная система", "top": "Топ рейтинг", "admin": "Админ (Связь)", "settings_btn": "Настройки",
-        "main_title": "💎 Главное меню", "main_trust": "🤝 Совершайте покупки с нами безопасно", "main_hint": "👇 Выберите нужную услугу", "profile_title": "👤 Профиль", "id": "ID", "username": "Username",
-        "joined": "Дата регистрации", "language_label": "Язык", "today": "Сегодня", "week": "Неделя", "month": "Месяц", "top_buyers": "Топ покупателей",
-        "no_data": "Пока недостаточно данных для рейтинга.", "referral_title": "👥 Реферальная система", "withdraw": "📤 Вывести Stars",
-        "contact_title": "📱 Подтверждение номера", "contact_text": "Для реферального вознаграждения отправьте номер Узбекистана (+998) или России (+7).",
-        "share_contact": "📱 Отправить номер", "bad_phone": "❌ Разрешены только номера +998 или +7.", "phone_ok": "✅ Номер подтверждён."
-    }
-}
-
-
-def lang(user_id):
-    return user_languages.get(str(user_id), "uz")
-
-
-def tr(user_id, key):
-    return LANG_TEXT.get(lang(user_id), LANG_TEXT["uz"]).get(key, LANG_TEXT["uz"].get(key, key))
-
-
-def editable_text(key, fallback="", user_id=0):
-    code = lang(user_id) if user_id else "uz"
-    bucket = texts.get(code, {}) if isinstance(texts, dict) else {}
-    if isinstance(bucket, dict) and key in bucket:
-        return str(bucket[key])
-    return str(fallback)
-
-
-def menu_emoji(key, fallback):
+def menu_emoji(key, fallback=""):
     eid = menu_emojis.get(key)
     return f'<tg-emoji emoji-id="{eid}">{fallback}</tg-emoji>' if eid else fallback
 
@@ -376,8 +311,8 @@ async def async_check_all_subs(user_id):
 def get_sub_keyboard(unsubscribed_channels):
     builder = InlineKeyboardBuilder()
     for ch in unsubscribed_channels:
-        builder.row(types.InlineKeyboardButton(text=f"📢 {ch} ga obuna bo'lish", url=f"https://t.me/{ch.replace('@', '')}"))
-    builder.row(types.InlineKeyboardButton(text="✅ Obunani tekshirish", callback_data="check_subscription"))
+        builder.row(types.InlineKeyboardButton(text=f"📢 {ch} ga obuna bo'lish", url=f"https://t.me/{ch.replace('@', '')}", icon_custom_emoji_id=menu_emojis.get("channel_btn")))
+    builder.row(types.InlineKeyboardButton(text="✅ Obunani tekshirish", callback_data="check_subscription", icon_custom_emoji_id=menu_emojis.get("check_btn")))
     return builder.as_markup()
 
 
@@ -385,42 +320,41 @@ def build_products():
     stars = {}
     for s_str, p in prices["stars"].items():
         stars[f"stars_{s_str}"] = {
-            "name": f"⭐ {s_str} - {money(p)} so'm",
-            "formatted": f"{EMOJI_STARS_HTML} <b>{s_str} Stars</b> - {money(p)} so'm",
+            "name": f"{s_str} Stars - {money(p)} so'm",
+            "formatted": f"{menu_emoji('stars', '⭐️')} <b>{s_str} Stars</b> - {money(p)} so'm",
             "price": int(p),
             "count": int(s_str)
         }
 
     gifts_info = {
-        "gift_15": ("🎁", "15 talik Gift (13 stars)"),
-        "gift_25": ("💝", "25 talik Gift (21 stars)"),
-        "gift_50": ("🎂", "50 talik Gift (43 stars)"),
-        "gift_100": ("🏆", "100 talik Gift (83/85 stars)")
+        "gift_15": "15 talik Gift (13 stars)",
+        "gift_25": "25 talik Gift (21 stars)",
+        "gift_50": "50 talik Gift (43 stars)",
+        "gift_100": "100 talik Gift (83/85 stars)"
     }
 
     gifts = {}
-    for key, (emoji, title) in gifts_info.items():
+    for key, title in gifts_info.items():
         p = prices["gifts"][key]
         gifts[key] = {
-            "name": f"{emoji} {title} - {money(p)} so'm",
-            "formatted": f"{emoji} {title} - {money(p)} so'm",
+            "name": f"{title} - {money(p)} so'm",
+            "formatted": f"{menu_emoji(key, '🎁')} {title} - {money(p)} so'm",
             "price": int(p)
         }
 
     premium_names = {
-        "prem_3": "💎 3 oy",
-        "prem_6": "💎 6 oy",
-        "prem_12": "💎 1 yil",
-        "prem_1": "💎 1 oy"
+        "prem_3": "3 oy",
+        "prem_6": "6 oy",
+        "prem_12": "1 yil",
+        "prem_1": "1 oy"
     }
 
     premium = {}
     for key, title in premium_names.items():
         p = prices["premium"][key]
-        clean_title = title.replace("💎 ", "")
         premium[key] = {
             "name": f"{title} - {money(p)} so'm",
-            "formatted": f"{EMOJI_PREMIUM_HTML} {clean_title} - {money(p)} so'm",
+            "formatted": f"{menu_emoji(key, '💎')} <b>{title}</b> - {money(p)} so'm",
             "price": int(p)
         }
 
@@ -483,7 +417,8 @@ def main_menu_text(user_id=0):
 
 def back_main_keyboard(user_id=0):
     builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text=tr(user_id, "back"), callback_data="back_main"))
+    eid = menu_emojis.get("back")
+    builder.row(types.InlineKeyboardButton(text=tr(user_id, "back"), callback_data="back_main", icon_custom_emoji_id=eid if eid else None))
     return builder.as_markup()
 
 
@@ -518,7 +453,7 @@ def get_admin_panel_keyboard():
     builder.row(types.InlineKeyboardButton(text="📝 Textlarni o'zgartirish", callback_data="admin_texts"))
     builder.row(
         types.InlineKeyboardButton(text="⭐ Referal mukofoti", callback_data="admin_referral_reward"),
-        types.InlineKeyboardButton(text="👤 Foydalanuvchi xabari", callback_data="admin_user_message")
+        types.InlineKeyboardButton(text="👤 Foydalanuvchiga xabar", callback_data="admin_user_message")
     )
     builder.row(types.InlineKeyboardButton(text="🗑 Bot xabarini o'chirish", callback_data="admin_delete_message"))
     builder.row(types.InlineKeyboardButton(text="📢 Xabar Yuborish", callback_data="admin_broadcast"))
@@ -557,7 +492,9 @@ async def admin_stats_handler(callback):
 EMOJI_KEYS = {
     "deposit": "Hisob to'ldirish", "stars": "Stars olish", "gift": "Gift olish", "premium": "Premium olish",
     "balance": "Hisobim", "sell": "Gift sotish", "referral": "Referal tizimi", "top": "Top reyting",
-    "settings": "Sozlamalar", "admin": "Admin", "main_title": "Asosiy menyu", "hint": "Menyu matni"
+    "settings": "Sozlamalar", "admin": "Admin", "main_title": "Asosiy menyu", "hint": "Menyu matni",
+    "prem_1": "Premium 1 oy", "prem_3": "Premium 3 oy", "prem_6": "Premium 6 oy", "prem_12": "Premium 1 yil",
+    "gift_15": "Gift 15", "gift_25": "Gift 25", "gift_50": "Gift 50", "gift_100": "Gift 100", "back": "Orqaga"
 }
 
 
@@ -569,7 +506,7 @@ async def admin_emojis_handler(callback, state):
     for key, label in EMOJI_KEYS.items():
         b.row(types.InlineKeyboardButton(text=f"{label} — {menu_emojis.get(key,'standart')}", callback_data=f"emoji_edit_{key}"))
     b.row(types.InlineKeyboardButton(text="⬅️ Admin Panel", callback_data="admin_panel"))
-    await callback.message.edit_text("<b>🎨 Emoji boshqarish</b>\n\nKerakli menyu elementini tanlang.", reply_markup=b.as_markup())
+    await callback.message.edit_text("<b>🎨 Emoji boshqarish</b>\n\nKerakli elementni tanlang.", reply_markup=b.as_markup())
     await callback.answer()
 
 
@@ -598,6 +535,7 @@ async def emoji_edit_save(message, state):
     else:
         menu_emojis[key] = raw
     save_data()
+    refresh_products()
     await state.clear()
     await safe_delete(message)
     await message.answer("✅ Emoji saqlandi.", reply_markup=get_admin_panel_keyboard())
@@ -688,7 +626,7 @@ async def deposit_start(callback, state):
     deposit_minmax = editable_text("deposit_minmax", "🔹 Minimum: <b>1.000 so'm</b>", callback.from_user.id)
     deposit_input = editable_text("deposit_input", "✍️ Miqdorni yozing:", callback.from_user.id)
     await callback.message.edit_text(
-        f"<blockquote>{EMOJI_DEPOSIT_HTML} <b>{deposit_title}</b>\n\n{deposit_prompt}\n\n{deposit_minmax}\n\n{deposit_input}</blockquote>",
+        f"<blockquote>{menu_emoji('deposit', EMOJI_DEPOSIT_HTML)} <b>{deposit_title}</b>\n\n{deposit_prompt}\n\n{deposit_minmax}\n\n{deposit_input}</blockquote>",
         reply_markup=back_main_keyboard(callback.from_user.id)
     )
     await state.set_state(DepositState.waiting_for_amount)
@@ -720,7 +658,7 @@ async def process_deposit_amount(message, state):
     payment_transfer = editable_text("payment_transfer", "Kartaga <b>{amount} so'm</b> o'tkazing.", user_id).format(amount=money(amount))
 
     card_text = (
-        f"<blockquote>{EMOJI_CARD_HTML} {payment_card_label} <code>{PAYMENT_CARD}</code>\n"
+        f"<blockquote>{menu_emoji('deposit', EMOJI_CARD_HTML)} {payment_card_label} <code>{PAYMENT_CARD}</code>\n"
         f"{payment_owner_label} {PAYMENT_CARD_OWNER}\n\n"
         f"{EMOJI_TRANSFER_HTML} {payment_transfer}\n\n"
         "📸 <b>To'lovni amalga oshirgach, chek (skrinshot) rasmini shu yerga yuboring.</b>\n"
@@ -728,7 +666,7 @@ async def process_deposit_amount(message, state):
     )
 
     builder = InlineKeyboardBuilder()
-    builder.row(types.InlineKeyboardButton(text="❌ Bekor qilish", callback_data="cancel"))
+    builder.row(types.InlineKeyboardButton(text="❌ Bekor qilish", callback_data="cancel", icon_custom_emoji_id=menu_emojis.get("back")))
 
     await delete_previous_menu(user_id)
     msg = await message.answer(card_text, reply_markup=builder.as_markup())
@@ -844,9 +782,9 @@ async def reject_payment(callback):
 async def stars_menu(callback):
     builder = InlineKeyboardBuilder()
     for key, data in STARS_PRICES.items():
-        builder.add(types.InlineKeyboardButton(text=data["name"], callback_data=f"buyprod_{key}"))
+        builder.add(types.InlineKeyboardButton(text=data["name"], callback_data=f"buyprod_{key}", icon_custom_emoji_id=menu_emojis.get("stars")))
     builder.adjust(2)
-    builder.row(types.InlineKeyboardButton(text="⬅️ Orqaga", callback_data="back_main"))
+    builder.row(types.InlineKeyboardButton(text="⬅️ Orqaga", callback_data="back_main", icon_custom_emoji_id=menu_emojis.get("back")))
     await callback.message.edit_text("⭐ <b>Stars paketini tanlang:</b>", reply_markup=builder.as_markup())
     await callback.answer()
 
@@ -855,9 +793,9 @@ async def stars_menu(callback):
 async def gift_menu(callback):
     builder = InlineKeyboardBuilder()
     for key, data in GIFT_PRICES.items():
-        builder.add(types.InlineKeyboardButton(text=data["name"], callback_data=f"buyprod_{key}"))
+        builder.add(types.InlineKeyboardButton(text=data["name"], callback_data=f"buyprod_{key}", icon_custom_emoji_id=menu_emojis.get(key)))
     builder.adjust(2)
-    builder.row(types.InlineKeyboardButton(text="⬅️ Orqaga", callback_data="back_main"))
+    builder.row(types.InlineKeyboardButton(text="⬅️ Orqaga", callback_data="back_main", icon_custom_emoji_id=menu_emojis.get("back")))
     await callback.message.edit_text("🎁 <b>Gift tanlang:</b>", reply_markup=builder.as_markup())
     await callback.answer()
 
@@ -866,9 +804,9 @@ async def gift_menu(callback):
 async def premium_menu(callback):
     builder = InlineKeyboardBuilder()
     for key, data in PREMIUM_PRICES.items():
-        builder.add(types.InlineKeyboardButton(text=data["name"], callback_data=f"buyprod_{key}"))
+        builder.add(types.InlineKeyboardButton(text=data["name"], callback_data=f"buyprod_{key}", icon_custom_emoji_id=menu_emojis.get(key)))
     builder.adjust(2)
-    builder.row(types.InlineKeyboardButton(text="⬅️ Orqaga", callback_data="back_main"))
+    builder.row(types.InlineKeyboardButton(text="⬅️ Orqaga", callback_data="back_main", icon_custom_emoji_id=menu_emojis.get("back")))
     await callback.message.edit_text("💎 <b>Premium tanlang:</b>", reply_markup=builder.as_markup())
     await callback.answer()
 
