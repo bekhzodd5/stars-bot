@@ -83,7 +83,7 @@ def default_prices():
                 "main_hint": "Kerakli xizmatni tanlang",
                 "deposit_title": "Hisob to'ldirish",
                 "deposit_prompt": "Hisobingizni qanchaga to'ldirmoqchisiz?",
-                "deposit_minmax": "Minimum: <b>1.000 so'm</b>\nMaksimum: <b>22.500 so'm</b>",
+                "deposit_minmax": "🔹 Minimum: <b>1.000 so'm</b>\n🔹 Maksimum: <b>Cheksiz</b>",
                 "deposit_input": "Miqdorni yozing:",
                 "payment_card_label": "Karta:",
                 "payment_owner_label": "Ega:",
@@ -1685,10 +1685,10 @@ async def process_deposit_amount(message, state):
         await safe_delete(msg)
         return
 
-    amount = int(message.text)
-    if amount < 1000 or amount > 22500:
+   amount = int(message.text)
+    if amount < 1000:
         msg = await message.answer(
-            "<blockquote>❌ Miqdor 1.000 so'mdan kam yoki 22.500 so'mdan ko'p bo'lmasligi kerak!</blockquote>"
+            "<blockquote>❌ Minimal to'ldirish miqdori — <b>1.000 so'm</b>!</blockquote>"
         )
         await asyncio.sleep(2)
         await safe_delete(msg)
