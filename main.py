@@ -56,10 +56,10 @@ def default_prices():
             "gift_85_2": 18000
         },
         "premium": {
+            "prem_1": 45000,
             "prem_3": 180000,
             "prem_6": 310000,
-            "prem_12": 435000,
-            "prem_1": 45000
+            "prem_12": 435000
         },
         "sell_gifts": {
             "sell_gift_bear": 2000,
@@ -128,7 +128,6 @@ def default_prices():
 
 def load_data():
     defaults = default_prices()
-
     if os.path.exists(DATA_FILE):
         try:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
@@ -149,15 +148,12 @@ def load_data():
                     value = saved_prices.get(group)
                     if isinstance(value, (int, float)):
                         defaults[group] = int(value)
-
                 elif group == "referral_reward":
                     value = saved_prices.get(group)
                     if isinstance(value, (int, float)):
                         defaults[group] = float(value)
-
                 elif group == "texts":
                     continue
-
                 elif isinstance(saved_prices.get(group), dict):
                     for key in defaults[group]:
                         if key in saved_prices[group]:
@@ -181,7 +177,6 @@ def load_data():
                 "texts": defaults["texts"],
                 "prices": defaults
             }
-
         except Exception:
             pass
 
@@ -203,7 +198,6 @@ def load_data():
 
 
 db = load_data()
-
 user_balances = db["user_balances"]
 user_stars_balances = db["user_stars_balances"]
 user_referrals = db["user_referrals"]
@@ -228,32 +222,25 @@ class DepositState(StatesGroup):
     waiting_for_amount = State()
     waiting_for_receipt = State()
 
-
 class BuyState(StatesGroup):
     waiting_for_target = State()
 
-
 class CustomStarsState(StatesGroup):
     waiting_for_stars_amount = State()
-
 
 class GiftProcess(StatesGroup):
     waiting_for_receipt = State()
     waiting_for_card_details = State()
 
-
 class WithdrawStarsState(StatesGroup):
     waiting_for_username = State()
-
 
 class ContactState(StatesGroup):
     waiting_for_contact = State()
 
-
 class EmojiState(StatesGroup):
     waiting_for_key = State()
     waiting_for_id = State()
-
 
 class AdminState(StatesGroup):
     waiting_for_user_id_add = State()
@@ -287,7 +274,6 @@ def save_data():
         "texts": texts,
         "prices": prices
     }
-
     try:
         with open(DATA_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
@@ -298,15 +284,16 @@ def save_data():
 def money(n):
     return f"{int(n):,}".replace(",", ".")
 
-
 def format_stars(value):
     return f"{float(value):g}"
 
+def lang(user_id):
+    return user_languages.get(str(user_id), "uz")
 
 LANG_TEXT = {
     "uz": {
         "settings": "Sozlamalar", "profile": "Profil", "language": "Til", "choose_lang": "Interfeys tilini tanlang:",
-        "uzbek": "O'zbekcha 🇺🇿", "russian": "Русский 🇷🇺", "back": "Orqaga", "refresh": "Yangilash",
+        "uzbek": "O'zbekcha", "russian": "Русский", "back": "Orqaga", "refresh": "Yangilash",
         "deposit": "Hisob to'ldirish", "stars": "Stars olish", "gift": "Gift olish", "premium": "Premium olish", "balance": "Hisobim",
         "sell": "Gift sotish", "referral": "Referal tizimi", "top": "Top reyting", "admin": "Admin (Aloqa)", "settings_btn": "Sozlamalar",
         "main_title": "Asosiy menyu", "main_trust": "Biz bilan ishonchli savdo qiling", "main_hint": "Kerakli xizmatni tanlang", "profile_title": "Profil", "id": "ID", "username": "Username",
@@ -317,7 +304,7 @@ LANG_TEXT = {
     },
     "ru": {
         "settings": "Настройки", "profile": "Профиль", "language": "Язык", "choose_lang": "Выберите язык интерфейса:",
-        "uzbek": "O'zbekcha 🇺🇿", "russian": "Русский 🇷🇺", "back": "Назад", "refresh": "Обновить",
+        "uzbek": "O'zbekcha", "russian": "Русский", "back": "Назад", "refresh": "Обновить",
         "deposit": "Пополнить счёт", "stars": "Купить Stars", "gift": "Купить Gift", "premium": "Купить Premium", "balance": "Мой счёт",
         "sell": "Продать Gift", "referral": "Реферальная система", "top": "Топ рейтинг", "admin": "Админ (Связь)", "settings_btn": "Настройки",
         "main_title": "Главное меню", "main_trust": "Совершайте покупки с нами безопасно", "main_hint": "Выберите нужную услугу", "profile_title": "Профиль", "id": "ID", "username": "Username",
@@ -328,14 +315,8 @@ LANG_TEXT = {
     }
 }
 
-
-def lang(user_id):
-    return user_languages.get(str(user_id), "uz")
-
-
 def tr(user_id, key):
     return LANG_TEXT.get(lang(user_id), LANG_TEXT["uz"]).get(key, LANG_TEXT["uz"].get(key, key))
-
 
 def editable_text(key, fallback="", user_id=0):
     code = lang(user_id) if user_id else "uz"
@@ -344,26 +325,21 @@ def editable_text(key, fallback="", user_id=0):
         return str(bucket[key])
     return str(fallback)
 
-
 def custom_tag(key):
     eid = menu_emojis.get(key)
     return f'<tg-emoji emoji-id="{eid}">✨</tg-emoji> ' if eid else ''
-
 
 def p_btn(text, cb, key):
     eid = menu_emojis.get(key)
     return types.InlineKeyboardButton(text=text, callback_data=cb, icon_custom_emoji_id=eid if eid else None)
 
-
 def p_url_btn(text, url, key):
     eid = menu_emojis.get(key)
     return types.InlineKeyboardButton(text=text, url=url, icon_custom_emoji_id=eid if eid else None)
 
-
 def phone_allowed(phone):
     digits = re.sub(r"\D", "", phone or "")
     return digits.startswith("998") or digits.startswith("7")
-
 
 def top_period_start(period):
     from datetime import timedelta
@@ -373,7 +349,6 @@ def top_period_start(period):
     if period == "week":
         return now - timedelta(days=7)
     return now - timedelta(days=30)
-
 
 def build_top_text(user_id, period):
     start = top_period_start(period)
@@ -398,19 +373,15 @@ def build_top_text(user_id, period):
         text += f"{i}. <b>{row['name']}</b> — {money(row['total'])} so'm ({row['count']} ta)\n"
     return text + "</blockquote>"
 
-
 def get_balance(user_id):
     return user_balances.get(user_id, 0)
-
 
 def update_balance(user_id, amount):
     user_balances[user_id] = get_balance(user_id) + amount
     save_data()
 
-
 def get_stars_balance(user_id):
     return user_stars_balances.get(user_id, 0.0)
-
 
 def add_star_referral(user_id):
     reward = float(prices.get("referral_reward", 1.5))
@@ -431,14 +402,10 @@ def build_products():
         }
 
     gifts_info = {
-        "gift_13_1": 13,
-        "gift_13_2": 13,
-        "gift_21_1": 21,
-        "gift_21_2": 21,
-        "gift_43_1": 43,
-        "gift_43_2": 43,
-        "gift_85_1": 85,
-        "gift_85_2": 85
+        "gift_13_1": 13, "gift_13_2": 13,
+        "gift_21_1": 21, "gift_21_2": 21,
+        "gift_43_1": 43, "gift_43_2": 43,
+        "gift_85_1": 85, "gift_85_2": 85
     }
 
     gifts = {}
@@ -451,10 +418,7 @@ def build_products():
         }
 
     premium_names = {
-        "prem_1": "1 oy",
-        "prem_3": "3 oy",
-        "prem_6": "6 oy",
-        "prem_12": "1 yil"
+        "prem_1": "1 oy", "prem_3": "3 oy", "prem_6": "6 oy", "prem_12": "1 yil"
     }
 
     premium = {}
@@ -475,7 +439,6 @@ ALL_PRODUCTS.update(STARS_PRICES)
 ALL_PRODUCTS.update(GIFT_PRICES)
 ALL_PRODUCTS.update(PREMIUM_PRICES)
 
-
 def refresh_products():
     global STARS_PRICES, GIFT_PRICES, PREMIUM_PRICES, ALL_PRODUCTS
     STARS_PRICES, GIFT_PRICES, PREMIUM_PRICES = build_products()
@@ -483,7 +446,6 @@ def refresh_products():
     ALL_PRODUCTS.update(STARS_PRICES)
     ALL_PRODUCTS.update(GIFT_PRICES)
     ALL_PRODUCTS.update(PREMIUM_PRICES)
-
 
 async def check_all_subs(user_id):
     unsubscribed = []
@@ -496,7 +458,6 @@ async def check_all_subs(user_id):
             logging.error(f"Kanalni tekshirishda xatolik: {e}")
             unsubscribed.append(channel)
     return unsubscribed
-
 
 def get_sub_keyboard(unsubscribed_channels):
     builder = InlineKeyboardBuilder()
@@ -512,7 +473,6 @@ def get_sub_keyboard(unsubscribed_channels):
         p_btn("Obunani tekshirish", "check_subscription", "check_btn")
     )
     return builder.as_markup()
-
 
 def price_group_keyboard():
     builder = InlineKeyboardBuilder()
@@ -532,7 +492,6 @@ def price_group_keyboard():
     )
     return builder.as_markup()
 
-
 def get_main_inline_menu(user_id=None):
     uid = user_id or 0
     builder = InlineKeyboardBuilder()
@@ -546,12 +505,10 @@ def get_main_inline_menu(user_id=None):
         builder.row(p_btn("Admin Panel", "admin_panel", "settings"))
     return builder.as_markup()
 
-
 def get_bottom_reply_keyboard(user_id=0):
     builder = ReplyKeyboardBuilder()
     builder.row(types.KeyboardButton(text=tr(user_id, "refresh")))
     return builder.as_markup(resize_keyboard=True)
-
 
 def main_menu_text(user_id=0):
     title = editable_text("main_title", tr(user_id, "main_title"), user_id)
@@ -565,19 +522,16 @@ def main_menu_text(user_id=0):
         f"{custom_tag('main_hint')}{hint}</blockquote>"
     )
 
-
 def back_main_keyboard(user_id=0):
     builder = InlineKeyboardBuilder()
     builder.row(p_btn(tr(user_id, "back"), "back_main", "back"))
     return builder.as_markup()
-
 
 async def safe_delete(message):
     try:
         await message.delete()
     except Exception:
         pass
-
 
 async def delete_previous_menu(user_id):
     if user_id in last_menu_messages:
@@ -586,7 +540,6 @@ async def delete_previous_menu(user_id):
         except Exception:
             pass
         last_menu_messages.pop(user_id, None)
-
 
 def get_admin_panel_keyboard():
     builder = InlineKeyboardBuilder()
@@ -606,7 +559,7 @@ def get_admin_panel_keyboard():
         p_btn("Foydalanuvchiga xabar", "admin_user_message", "admin")
     )
     builder.row(p_btn("Bot xabarini o'chirish", "admin_delete_message", "cancel"))
-    builder.row(p_btn("Xabar Yuborish (Broadcast)", "admin_broadcast", "channel_btn"))
+    builder.row(p_btn("Xabar Yuborish", "admin_broadcast", "channel_btn"))
     builder.row(p_btn("Bosh Menyu", "back_main", "back"))
     return builder.as_markup()
 
@@ -642,53 +595,105 @@ async def admin_stats_handler(callback):
     await callback.answer()
 
 
-EMOJI_KEYS = {
-    # Asosiy menyu tugmalari
-    "deposit": "Hisob to'ldirish tugmasi",
-    "stars": "Stars olish tugmasi",
-    "gift": "Gift olish tugmasi",
-    "premium": "Premium olish tugmasi",
-    "balance": "Hisobim tugmasi",
-    "sell": "Gift sotish tugmasi",
-    "referral": "Referal tizimi tugmasi",
-    "top": "Top reyting tugmasi",
-    "settings": "Sozlamalar tugmasi",
-    "admin": "Admin (Aloqa) tugmasi",
-    "back": "Orqaga tugmasi",
-    
-    # Premium paketlar
-    "prem_1": "Premium (1 oy)",
-    "prem_3": "Premium (3 oy)",
-    "prem_6": "Premium (6 oy)",
-    "prem_12": "Premium (1 yil)",
+# BARCHA PREMIUM EMOJI KALITLARI
+EMOJI_CATEGORIES = {
+    "cat_main": "🏠 Asosiy menyu tugmalari",
+    "cat_prem": "💎 Premium bo'limi",
+    "cat_gifts": "🎁 Giftlar bo'limi",
+    "cat_top": "🏆 Reyting & Sozlamalar",
+    "cat_actions": "⚙️ Boshqa tugmalar"
+}
 
-    # Boshqa tugmalar
-    "custom_stars": "Boshqa miqdorda Stars",
-    "channel_btn": "Kanalga obuna bo'lish",
-    "check_btn": "Obunani tekshirish",
-    "payment_done": "To'lovni amalga oshirdim",
-    "cancel": "Bekor qilish",
-
-    # Matn sarlavhalari (matn oldidan chiqadi)
-    "main_title": "Asosiy menyu sarlavhasi",
-    "main_trust": "Ishonchli savdo matni",
-    "main_channel": "Kanal yangiliklari matni",
-    "main_hint": "Xizmat tanlang matni",
+CATEGORY_ITEMS = {
+    "cat_main": [
+        ("deposit", "Hisob to'ldirish tugmasi"),
+        ("stars", "Stars olish tugmasi"),
+        ("gift", "Gift olish tugmasi"),
+        ("premium", "Premium olish tugmasi"),
+        ("balance", "Hisobim tugmasi"),
+        ("sell", "Gift sotish tugmasi"),
+        ("referral", "Referal tizimi tugmasi"),
+        ("top", "Top reyting tugmasi"),
+        ("settings", "Sozlamalar tugmasi"),
+        ("admin", "Admin (Aloqa) tugmasi"),
+    ],
+    "cat_prem": [
+        ("prem_auto", "Profilga kirmasdan (Avto)"),
+        ("prem_admin", "Profilga kirib (Admin orqali)"),
+        ("prem_1", "Premium (1 oy)"),
+        ("prem_3", "Premium (3 oy)"),
+        ("prem_6", "Premium (6 oy)"),
+        ("prem_12", "Premium (1 yil)"),
+    ],
+    "cat_gifts": [
+        ("gift_13_1", "Gift 13 Stars (1)"),
+        ("gift_13_2", "Gift 13 Stars (2)"),
+        ("gift_21_1", "Gift 21 Stars (1)"),
+        ("gift_21_2", "Gift 21 Stars (2)"),
+        ("gift_43_1", "Gift 43 Stars (1)"),
+        ("gift_43_2", "Gift 43 Stars (2)"),
+        ("gift_85_1", "Gift 85 Stars (1)"),
+        ("gift_85_2", "Gift 85 Stars (2)"),
+        ("sell_gift_bear", "Gift sotish: Bear"),
+        ("sell_gift_heart", "Gift sotish: Heart"),
+        ("sell_gift_box", "Gift sotish: Box"),
+        ("sell_gift_rose", "Gift sotish: Rose"),
+        ("sell_gift_rocket", "Gift sotish: Rocket"),
+        ("sell_gift_cake", "Gift sotish: Cake"),
+        ("sell_gift_gem", "Gift sotish: Gem"),
+        ("sell_gift_ring", "Gift sotish: Ring"),
+    ],
+    "cat_top": [
+        ("lang_uz", "Til: O'zbekcha"),
+        ("lang_ru", "Til: Русский"),
+        ("top_today", "Top: Bugun"),
+        ("top_week", "Top: Hafta"),
+        ("top_month", "Top: Oy"),
+        ("profile", "O'zimning profilimga"),
+        ("target_other", "Boshqa profilga"),
+    ],
+    "cat_actions": [
+        ("back", "Orqaga tugmasi"),
+        ("refresh", "Yangilash tugmasi"),
+        ("custom_stars", "Boshqa miqdorda Stars"),
+        ("channel_btn", "Kanalga obuna bo'lish"),
+        ("check_btn", "Obunani tekshirish"),
+        ("payment_done", "To'lovni amalga oshirdim"),
+        ("cancel", "Bekor qilish tugmasi"),
+        ("confirm_buy", "Xaridni tasdiqlash"),
+    ]
 }
 
 
 @dp.callback_query(F.data == "admin_emojis")
-async def admin_emojis_handler(callback, state):
+async def admin_emojis_categories(callback, state):
     if callback.from_user.id != ADMIN_ID:
         return
     b = InlineKeyboardBuilder()
-    for key, label in EMOJI_KEYS.items():
-        curr_id = menu_emojis.get(key)
-        status = f"ID: {curr_id}" if curr_id else "qo'yilmagan"
-        b.row(types.InlineKeyboardButton(text=f"{label} — {status}", callback_data=f"emoji_edit_{key}"))
+    for cat_id, cat_name in EMOJI_CATEGORIES.items():
+        b.row(types.InlineKeyboardButton(text=cat_name, callback_data=cat_id))
     b.row(p_btn("Admin Panel", "admin_panel", "back"))
     await callback.message.edit_text(
-        "<b>🎨 Premium Emoji boshqarish</b>\n\nQaysi tugma yoki sarlavhaga Premium Emoji qo'ymoqchisiz? Tanlang va uning <b>custom_emoji_id</b> raqamini yuboring.",
+        "<b>🎨 Premium Emoji boshqarish</b>\n\nBo'limni tanlang:",
+        reply_markup=b.as_markup()
+    )
+    await callback.answer()
+
+
+@dp.callback_query(F.data.in_(set(EMOJI_CATEGORIES.keys())))
+async def admin_emojis_list(callback, state):
+    if callback.from_user.id != ADMIN_ID:
+        return
+    cat = callback.data
+    items = CATEGORY_ITEMS.get(cat, [])
+    b = InlineKeyboardBuilder()
+    for key, label in items:
+        curr_id = menu_emojis.get(key)
+        status = f"ID: {curr_id}" if curr_id else "yo'q"
+        b.row(types.InlineKeyboardButton(text=f"{label} — {status}", callback_data=f"emoji_edit_{key}"))
+    b.row(p_btn("Bo'limlar", "admin_emojis", "back"))
+    await callback.message.edit_text(
+        f"<b>🎨 {EMOJI_CATEGORIES.get(cat)}</b>\n\nEmoji ID qo'ymoqchi bo'lgan tugmangizni tanlang:",
         reply_markup=b.as_markup()
     )
     await callback.answer()
@@ -702,7 +707,7 @@ async def emoji_edit_start(callback, state):
     await state.update_data(emoji_key=key)
     curr_id = menu_emojis.get(key, "Mavjud emas")
     await callback.message.edit_text(
-        f"<b>🎨 {EMOJI_KEYS.get(key, key)}</b>\n\n"
+        f"<b>🎨 Tugma:</b> <code>{key}</code>\n\n"
         f"Hozirgi Premium Emoji ID: <code>{curr_id}</code>\n\n"
         "Yangi custom emoji ID ni yuboring.\n"
         "O'chirib tashlash uchun <code>0</code> yuboring.",
@@ -883,7 +888,7 @@ async def price_group(callback):
     elif group == "gifts":
         for key, item in GIFT_PRICES.items():
             builder.row(
-                p_btn(item["name"], f"price_edit_{key}", "gift")
+                p_btn(item["name"], f"price_edit_{key}", key)
             )
         title = "Gift narxlari"
     elif group == "premium":
@@ -899,7 +904,7 @@ async def price_group(callback):
         }
         for key, name in sell_names.items():
             builder.row(
-                p_btn(f"{name} — {money(prices['sell_gifts'][key])} so'm", f"price_edit_{key}", "sell")
+                p_btn(f"{name} — {money(prices['sell_gifts'][key])} so'm", f"price_edit_{key}", key)
             )
         title = "Gift sotish narxlari"
 
@@ -1477,8 +1482,8 @@ async def settings_handler(callback):
 
     b = InlineKeyboardBuilder()
     b.row(
-        types.InlineKeyboardButton(text="Русский 🇷🇺", callback_data="set_lang_ru"),
-        types.InlineKeyboardButton(text="O'zbekcha 🇺🇿", callback_data="set_lang_uz")
+        p_btn(tr(uid, "russian"), "set_lang_ru", "lang_ru"),
+        p_btn(tr(uid, "uzbek"), "set_lang_uz", "lang_uz")
     )
     b.row(p_btn(tr(uid, "back"), "back_main", "back"))
     await callback.message.edit_text(text, reply_markup=b.as_markup())
@@ -1501,8 +1506,11 @@ async def set_language_handler(callback):
 async def top_rating_handler(callback):
     uid = callback.from_user.id
     b = InlineKeyboardBuilder()
-    b.row(types.InlineKeyboardButton(text=tr(uid, 'today'), callback_data="top_today"), types.InlineKeyboardButton(text=tr(uid, 'week'), callback_data="top_week"))
-    b.row(types.InlineKeyboardButton(text=tr(uid, 'month'), callback_data="top_month"))
+    b.row(
+        p_btn(tr(uid, 'today'), "top_today", "top_today"),
+        p_btn(tr(uid, 'week'), "top_week", "top_week")
+    )
+    b.row(p_btn(tr(uid, 'month'), "top_month", "top_month"))
     b.row(p_btn(tr(uid, "back"), "back_main", "back"))
     await callback.message.edit_text(build_top_text(uid, "today"), reply_markup=b.as_markup())
     await callback.answer()
@@ -1513,8 +1521,11 @@ async def top_period_handler(callback):
     uid = callback.from_user.id
     period = callback.data.replace("top_", "")
     b = InlineKeyboardBuilder()
-    b.row(types.InlineKeyboardButton(text=tr(uid, 'today'), callback_data="top_today"), types.InlineKeyboardButton(text=tr(uid, 'week'), callback_data="top_week"))
-    b.row(types.InlineKeyboardButton(text=tr(uid, 'month'), callback_data="top_month"))
+    b.row(
+        p_btn(tr(uid, 'today'), "top_today", "top_today"),
+        p_btn(tr(uid, 'week'), "top_week", "top_week")
+    )
+    b.row(p_btn(tr(uid, 'month'), "top_month", "top_month"))
     b.row(p_btn(tr(uid, "back"), "settings", "back"))
     await callback.message.edit_text(build_top_text(uid, period), reply_markup=b.as_markup())
     await callback.answer()
@@ -1700,7 +1711,7 @@ async def process_deposit_amount(message, state):
         f"<b>{payment_owner_label}</b> {PAYMENT_CARD_OWNER}\n\n"
         f"{payment_transfer}\n\n"
         f"{payment_done_instruction}\n\n"
-        f"{payment_timer}\n"
+        f"{payment_timer}\n\n"
         f"{payment_keep_receipt}</blockquote>"
     )
 
@@ -1963,7 +1974,7 @@ async def process_custom_stars_amount(message, state):
 
     builder = InlineKeyboardBuilder()
     builder.row(p_btn("O'zimning profilimga", "target_self", "profile"))
-    builder.row(p_btn("Boshqa profilga", "target_other", "referral"))
+    builder.row(p_btn("Boshqa profilga", "target_other", "target_other"))
     builder.row(p_btn("Orqaga", "buy_stars", "back"))
 
     if get_balance(user_id) < total_price:
@@ -2015,7 +2026,7 @@ async def sell_gift_start(callback):
     builder = InlineKeyboardBuilder()
     for key, name in SELL_GIFT_INFO.items():
         builder.add(
-            p_btn(f"{name} — {money(prices['sell_gifts'][key])} so'm", key, "sell")
+            p_btn(f"{name} — {money(prices['sell_gifts'][key])} so'm", key, key)
         )
     builder.adjust(2)
     builder.row(p_btn("Orqaga", "back_main", "back"))
@@ -2125,8 +2136,8 @@ async def confirm_payment_sell(call):
 @dp.callback_query(F.data == "buy_premium")
 async def premium_menu(callback):
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn("Profilga kirmasdan (Avto)", "prem_auto_menu", "premium"))
-    builder.row(p_btn("Profilga kirib (Admin orqali)", "prem_admin_menu", "admin"))
+    builder.row(p_btn("Profilga kirmasdan (Avto)", "prem_auto_menu", "prem_auto"))
+    builder.row(p_btn("Profilga kirib (Admin orqali)", "prem_admin_menu", "prem_admin"))
     builder.row(p_btn("Orqaga", "back_main", "back"))
 
     await callback.message.edit_text(
@@ -2194,7 +2205,7 @@ async def select_product(callback, state):
 
     builder = InlineKeyboardBuilder()
     builder.row(p_btn("O'zimning profilimga", "target_self", "profile"))
-    builder.row(p_btn("Boshqa profilga", "target_other", "referral"))
+    builder.row(p_btn("Boshqa profilga", "target_other", "target_other"))
     builder.row(p_btn("Orqaga", "back_main", "back"))
 
     text = (
@@ -2248,7 +2259,7 @@ async def confirm_purchase_menu(callback, state):
         return
 
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn("Xaridni tasdiqlash", "confirm_buy", "check_btn"))
+    builder.row(p_btn("Xaridni tasdiqlash", "confirm_buy", "confirm_buy"))
     builder.row(p_btn("Bekor qilish", "cancel", "cancel"))
 
     text = (
@@ -2272,7 +2283,7 @@ async def confirm_purchase_menu_msg(message, state):
         return
 
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn("Xaridni tasdiqlash", "confirm_buy", "check_btn"))
+    builder.row(p_btn("Xaridni tasdiqlash", "confirm_buy", "confirm_buy"))
     builder.row(p_btn("Bekor qilish", "cancel", "cancel"))
 
     text = (
@@ -2414,7 +2425,6 @@ async def admin_order_cancel(callback):
 async def dummy_handler(request):
     return web.Response(text="Bot ishlamoqda!")
 
-
 async def start_web_server():
     app = web.Application()
     app.router.add_get("/", dummy_handler)
@@ -2424,11 +2434,9 @@ async def start_web_server():
     site = web.TCPSite(runner, "0.0.0.0", port)
     await site.start()
 
-
 async def main():
     await start_web_server()
     await dp.start_polling(bot)
-
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
