@@ -517,7 +517,8 @@ async def check_all_subs(user_id):
             member = await bot.get_chat_member(chat_id=channel, user_id=user_id)
             if member.status not in ["creator", "administrator", "member"]:
                 unsubscribed.append(channel)
-        except Exception:
+        except Exception as e:
+            logging.error(f"Kanalni tekshirishda xatolik: {e}")
             unsubscribed.append(channel)
     return unsubscribed
 
@@ -1539,10 +1540,11 @@ async def start_cmd(message: types.Message, command: CommandObject, state: FSMCo
                 contact_kb = ReplyKeyboardBuilder()
                 contact_kb.row(types.KeyboardButton(text=tr(user_id, "share_contact"), request_contact=True))
                 contact_kb.row(types.KeyboardButton(text=tr(user_id, "refresh")))
-                await message.answer(
+                msg = await message.answer(
                     f"<blockquote><b>{tr(user_id,'contact_title')}</b>\n\n{tr(user_id,'contact_text')}</blockquote>",
                     reply_markup=contact_kb.as_markup(resize_keyboard=True, one_time_keyboard=True)
                 )
+                last_menu_messages[user_id] = msg.message_id
                 await state.set_state(ContactState.waiting_for_contact)
                 return
         save_data()
@@ -1554,15 +1556,17 @@ async def start_cmd(message: types.Message, command: CommandObject, state: FSMCo
     unsub = await check_all_subs(user_id)
     if unsub:
         sub_text = (
-            "<blockquote>📢 <b>Karmon botdan foydalanish uchun yangiliklar kanaliga obuna bo'ling.</b>\n\n"
+            "<blockquote>📢 <b>Star Market Uz botdan foydalanish uchun yangiliklar kanaliga obuna bo'ling.</b>\n\n"
             "👇 Kanalga obuna bo'lgach, <b>✅ Obunani tekshirish</b> tugmasini bosing.</blockquote>"
         )
         msg = await message.answer(sub_text, reply_markup=get_sub_keyboard(unsub))
         last_menu_messages[user_id] = msg.message_id
         return
 
-    await message.answer("Xush kelibsiz!", reply_markup=get_bottom_reply_keyboard(user_id))
-    msg = await message.answer(main_menu_text(user_id), reply_markup=get_main_inline_menu(user_id))
+    msg = await message.answer(
+        main_menu_text(user_id),
+        reply_markup=get_main_inline_menu(user_id)
+    )
     last_menu_messages[user_id] = msg.message_id
 
 
@@ -1589,11 +1593,14 @@ async def referral_contact_handler(message, state):
             pass
     save_data()
     await state.clear()
+    await delete_previous_menu(uid)
     await message.answer(tr(uid, "phone_ok"), reply_markup=get_bottom_reply_keyboard(uid))
+    
     unsub = await check_all_subs(uid)
     if unsub:
         sub_text = (
-            "<blockquote>📢 <b>" + ("Для использования бота подпишитесь на канал новостей." if lang(uid) == "ru" else "Botdan foydalanish uchun yangiliklar kanaliga obuna bo'ling.") + "</b>\n\n" + ("После подписки нажмите кнопку проверки." if lang(uid) == "ru" else "Obuna bo'lgach, tekshirish tugmasini bosing.") + "</blockquote>"
+            "<blockquote>📢 <b>Star Market Uz botdan foydalanish uchun yangiliklar kanaliga obuna bo'ling.</b>\n\n"
+            "👇 Kanalga obuna bo'lgach, <b>✅ Obunani tekshirish</b> tugmasini bosing.</blockquote>"
         )
         msg = await message.answer(sub_text, reply_markup=get_sub_keyboard(unsub))
     else:
@@ -1611,7 +1618,8 @@ async def bottom_refresh_handler(message, state):
     unsub = await check_all_subs(user_id)
     if unsub:
         msg = await message.answer(
-            "<blockquote>📢 <b>Avval @rymbyvv_otziv kanaliga obuna bo'ling.</b>\n\nObuna bo'lgach, tekshirish tugmasini bosing.</blockquote>",
+            "<blockquote>📢 <b>Star Market Uz botdan foydalanish uchun @rymbyvv_otziv kanaliga obuna bo'ling.</b>\n\n"
+            "👇 Kanalga obuna bo'lgach, <b>✅ Obunani tekshirish</b> tugmasini bosing.</blockquote>",
             reply_markup=get_sub_keyboard(unsub)
         )
         last_menu_messages[user_id] = msg.message_id
@@ -1623,17 +1631,18 @@ async def bottom_refresh_handler(message, state):
 
 @dp.callback_query(F.data == "check_subscription")
 async def check_sub_callback(callback):
-    unsub = await check_all_subs(callback.from_user.id)
+    user_id = callback.from_user.id
+    unsub = await check_all_subs(user_id)
     if not unsub:
         await callback.message.edit_text(
-            main_menu_text(callback.from_user.id),
-            reply_markup=get_main_inline_menu(callback.from_user.id)
+            main_menu_text(user_id),
+            reply_markup=get_main_inline_menu(user_id)
         )
-        last_menu_messages[callback.from_user.id] = callback.message.message_id
+        last_menu_messages[user_id] = callback.message.message_id
         await callback.answer("✅ Obuna tasdiqlandi!")
     else:
         await callback.answer(
-            "❌ Вы ещё не подписались на @rymbyvv_otziv!" if lang(callback.from_user.id) == "ru" else "❌ @rymbyvv_otziv kanaliga hali obuna bo'lmagansiz!",
+            "❌ @rymbyvv_otziv kanaliga hali obuna bo'lmagansiz!",
             show_alert=True
         )
 
@@ -1641,16 +1650,18 @@ async def check_sub_callback(callback):
 @dp.callback_query(F.data == "back_main")
 async def back_to_main(callback, state):
     await state.clear()
-    unsub = await check_all_subs(callback.from_user.id)
+    user_id = callback.from_user.id
+    unsub = await check_all_subs(user_id)
     if unsub:
         await callback.message.edit_text(
-            "<blockquote>📢 <b>Botdan foydalanish uchun @rymbyvv_otziv kanaliga obuna bo'ling.</b></blockquote>",
+            "<blockquote>📢 <b>Star Market Uz botdan foydalanish uchun @rymbyvv_otziv kanaliga obuna bo'ling.</b>\n\n"
+            "👇 Kanalga obuna bo'lgach, <b>✅ Obunani tekshirish</b> tugmasini bosing.</blockquote>",
             reply_markup=get_sub_keyboard(unsub)
         )
     else:
         await callback.message.edit_text(
-            main_menu_text(callback.from_user.id),
-            reply_markup=get_main_inline_menu(callback.from_user.id)
+            main_menu_text(user_id),
+            reply_markup=get_main_inline_menu(user_id)
         )
     await callback.answer()
 
