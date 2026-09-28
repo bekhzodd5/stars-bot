@@ -1,3 +1,29 @@
+ERROR:root:Kanalni tekshirishda xatolik: Telegram server says - Bad Request: member list is inaccessible
+```[cite: 9]
+
+### Xatolik nimadan bo'lyapti?
+1. **`Bad Request: member list is inaccessible`:** Botingiz `@rymbyvv_otziv` kanalida **ADMIN EMAS**[cite: 9]! Telegram qoidasi bo'yicha bot kanalda admin bo'lmasa, u yerdagi obunachilarni tekshira olmaydi va doim obuna bo'lmagan deb xato qaytaradi[cite: 9].
+2. **Xabarlar ko'payib ketishi:** Telegram bot foydalanuvchining yozgan xabarlarini o'chira oladi, lekin uning eski javob xabarlari ro'yxatda qolib ketyapti[cite: 10]. Eng to'g'ri yo'li — har safar yangi xabar tashlash emas, o'sha turgan xabarning **o'zini tahrirlash (edit qilish)**, shunda chatda doim **faqat 1 ta xabar** qoladi.
+
+---
+
+### 1-qadam (ENG MUHIMI): Botingizni kanalga ADMIN qilish
+Telegramga kiring:
+1. `@rymbyvv_otziv` kanalingiz sozlamalariga kiring.
+2. **Administrators (Adminlar)** bo'limiga o'ting.
+3. **Add Administrator (Admin qo'shish)** tugmasini bosib, qidiruvdan `@star_bozor_uz_bot` ni toping va uni kanalga **Admin** qilib saqlang.
+
+*(Buni qilmasangiz, har qancha obuna bo'lsangiz ham bot «obuna bo'lmagansiz» deyaveradi[cite: 9]).*
+
+---
+
+### 2-qadam: Faqat 1 dona xabar chiqaradigan qilingan kod
+
+Koddagi `start_cmd` va `check_subscription` funksiyalari yangi xabar tashlamasdan, eskisini o'rnida tahrirlaydigan (yoki eskisini tozalab tashlaydigan) qilib tuzatildi. 
+
+Mana to'liq to'g'ri kod, `main.py` fayliga joylab **Commit changes** qiling:
+
+```python
 import asyncio
 import json
 import logging
@@ -16,7 +42,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 
 
-BOT_TOKEN = os.getenv("BOT_TOKEN", "8982437206:AAHH1J5sxFMo7YkCaU2jpk_PQgMT_-P5Q3Q")
+BOT_TOKEN = os.getenv("BOT_TOKEN", "8982437206:AAG2F8QRSJA_akGEK6oFiiVd1kxmKiZxjuk")
 
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN ko'rsatilmagan!")
@@ -635,7 +661,7 @@ def get_admin_panel_keyboard():
     builder.row(types.InlineKeyboardButton(text="📝 Textlarni o'zgartirish", callback_data="admin_texts"))
     builder.row(
         types.InlineKeyboardButton(text="⭐ Referal mukofoti", callback_data="admin_referral_reward"),
-        types.InlineKeyboardButton(text="👤 Foydalanuvchiga xabar", callback_data="admin_user_message")
+        types.InlineKeyboardButton(text="👤 Foydalanuvchi xabari", callback_data="admin_user_message")
     )
     builder.row(types.InlineKeyboardButton(text="🗑 Bot xabarini o'chirish", callback_data="admin_delete_message"))
     builder.row(types.InlineKeyboardButton(text="📢 Xabar Yuborish", callback_data="admin_broadcast"))
