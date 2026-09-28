@@ -1767,12 +1767,15 @@ async def process_deposit_receipt(message, state):
     payment_id = data.get("payment_id")
     payment = pending_payments.get(payment_id)
 
-    if not payment or payment.get("user_id") != message.from_user.id or payment.get("status") != "waiting_receipt":
+    if not payment:
         await state.clear()
         await message.answer(
             "<blockquote><b>To'lov vaqti tugagan.</b>\n\nYangi to'lov oynasini ochib, qaytadan urinib ko'ring.</blockquote>",
             reply_markup=back_main_keyboard()
         )
+        return
+
+    if payment.get("user_id") != message.from_user.id:
         return
 
     if not message.photo:
@@ -1783,14 +1786,14 @@ async def process_deposit_receipt(message, state):
         await safe_delete(msg)
         return
 
-    payment["status"] = "waiting_admin"
     task = payment_expiry_tasks.pop(payment_id, None)
     if task:
         task.cancel()
 
+    payment["status"] = "waiting_admin"
     amount = payment["amount"]
     user_id = message.from_user.id
-    username = message.from_user.username or "Mavjud emas"
+    username = message.from_user.username or "yoq"
 
     try:
         await bot.forward_message(
@@ -1803,17 +1806,23 @@ async def process_deposit_receipt(message, state):
 
     admin_builder = InlineKeyboardBuilder()
     admin_builder.row(
-        p_btn("Tasdiqlash", f"approve_pay_{payment_id}", "check_btn"),
-        p_btn("Rad etish", f"reject_pay_{payment_id}", "cancel")
+        types.InlineKeyboardButton(
+            text="✅ Tasdiqlash",
+            callback_data=f"approve_pay_{payment_id}"
+        ),
+        types.InlineKeyboardButton(
+            text="❌ Rad etish",
+            callback_data=f"reject_pay_{payment_id}"
+        )
     )
 
     admin_text = (
-        f"<blockquote>{custom_tag('deposit')}<b>Yangi to'lov + chek!</b>\n\n"
-        f"Foydalanuvchi: {message.from_user.full_name}\n"
-        f"Username: @{username}\n"
-        f"ID: <code>{user_id}</code>\n"
-        f"Miqdor: <b>{money(amount)} so'm</b>\n\n"
-        "Chek yuqoridagi xabarda.</blockquote>"
+        "<blockquote>🔔 <b>Yangi to'lov + chek!</b>\n\n"
+        f"👤 Foydalanuvchi: {message.from_user.full_name}\n"
+        f"🔗 @{username}\n"
+        f"🆔 ID: <code>{user_id}</code>\n"
+        f"💰 Miqdor: <b>{money(amount)} so'm</b>\n\n"
+        "📸 <b>Chek yuqoridagi xabarda.</b></blockquote>"
     )
 
     try:
@@ -1823,24 +1832,27 @@ async def process_deposit_receipt(message, state):
             reply_markup=admin_builder.as_markup()
         )
     except Exception:
-        payment["status"] = "waiting_receipt"
-        msg = await message.answer("<blockquote>⚠️ Chekni adminga yuborishda xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.</blockquote>")
+        msg = await message.answer(
+            "<blockquote>⚠️ Chekni adminga yuborishda xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.</blockquote>"
+        )
         await asyncio.sleep(3)
         await safe_delete(msg)
         return
 
     await state.clear()
-    accepted_text = editable_text(
-        "receipt_accepted",
-        "<b>Chek qabul qilindi!</b>\n\nTo'lovingiz tekshirilmoqda.\n5 daqiqa ichida balansingizga qo'shilmasa,\nadminga murojaat qiling.",
-        message.from_user.id
+
+    accepted_text = (
+        "<b>✅ Chek qabul qilindi!</b>\n\n"
+        "🔎 To'lovingiz tekshirilmoqda.\n"
+        "⏳ 5 daqiqa ichida balansingizga qo'shilmasa,\n"
+        "👨‍💻 adminga murojaat qiling."
     )
     await message.answer(
-        f"<blockquote>{custom_tag('deposit')}{accepted_text}</blockquote>",
+        f"<blockquote>{accepted_text}</blockquote>",
         reply_markup=back_main_keyboard(message.from_user.id)
     )
 
-
+  
 @dp.callback_query(F.data.startswith("approve_pay_"))
 async def approve_payment(callback):
     if callback.from_user.id != ADMIN_ID:
