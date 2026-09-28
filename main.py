@@ -16,7 +16,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 
 
-BOT_TOKEN = os.getenv("8982437206:AAEdeSgZluIOS7SnDXSfFGqT8MuNlAglJz0")
+BOT_TOKEN = ("8982437206:AAEdeSgZluIOS7SnDXSfFGqT8MuNlAglJz0")
 
 if not BOT_TOKEN:
     raise RuntimeError(
