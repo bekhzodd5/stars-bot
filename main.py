@@ -90,9 +90,9 @@ def default_prices():
             "sell_gift_gem": 13200,
             "sell_gift_ring": 13200
         },
-        "custom_star": 220,
+        "custom_star": 250,
         "deposit_min": 1000,
-        "deposit_max": 22500,
+        "deposit_max": 10000000,
         "bot_enabled": True,
         "referral_reward": 1.5,
         "premium_button_emoji_id": DEFAULT_PREMIUM_BUTTON_EMOJI_ID,
