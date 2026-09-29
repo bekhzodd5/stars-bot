@@ -732,7 +732,7 @@ def get_main_inline_menu(user_id=None):
     uid = user_id or 0
     builder = InlineKeyboardBuilder()
 
-  def btn(text, cb, key):
+    def btn(text, cb, key):
         return types.InlineKeyboardButton(
             text=text,
             callback_data=cb,
