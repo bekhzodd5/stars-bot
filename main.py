@@ -281,30 +281,7 @@ menu_emojis = db.get("menu_emojis", {})
 texts = db.get("texts", default_prices()["texts"])
 prices = db["prices"]
 
-DEFAULT_MENU_EMOJIS = {
-    "deposit": "5305305558646041532", "stars": "4983746717313664194", "gift": "5226661632259691727",
-    "premium": "5461101215226019671", "balance": "5305307774849171921", "sell": "5226661632259691727",
-    "referral": "5458642217600040939", "top": "5458642217600040939", "settings": "5233239138450312962",
-    "admin": "", "back": DEFAULT_PREMIUM_BUTTON_EMOJI_ID, "home": DEFAULT_PREMIUM_BUTTON_EMOJI_ID,
-    "main_title": "5461101215226019671", "main_trust": "5233239138450312962", "main_hint": "5206707416065938614",
-    "deposit_title": "5305305558646041532", "deposit_minmax": "5206707416065938614",
-    "deposit_min": "5206707416065938614", "deposit_max": "5206707416065938614",
-    "payment_card_label": "5443039344443008807", "payment_owner_label": "5305307774849171921",
-    "payment_transfer": "5305305558646041532", "payment_timer": "5305244398311746134",
-    "payment_keep_receipt": "5472027384393776037", "payment_done_button": "5443039344443008807",
-    "receipt_request": DEFAULT_PREMIUM_BUTTON_EMOJI_ID,
-    "referral_title": "5458642217600040939", "referral_link": "5458642217600040939",
-    "referral_invited": "5458642217600040939", "referral_min_withdraw": "4983746717313664194",
-    "receipt_accepted": "5305357484800651517", "custom_stars": "4983746717313664194", "buy_stars": "4983746717313664194",
-    "card": "5443039344443008807", "owner": "5305307774849171921", "transfer": "5305305558646041532",
-    "timer": "5305244398311746134", "warning": "5472027384393776037", "confirm": "5427168083074628963",
-    "product": "5458488840022933066", "price": "4965663015211894662", "target": "5231012545799666522",
-    "account": "5305307774849171921", "balance_label": "5271974997521350631", "payment_success": "5305357484800651517",
-    "payment_reject": "5472027384393776037", "order_done": "5427168083074628963",
-}
-for _key, _eid in DEFAULT_MENU_EMOJIS.items():
-    if _eid and not menu_emojis.get(_key):
-        menu_emojis[_key] = _eid
+DEFAULT_MENU_EMOJIS = {}
 
 
 last_menu_messages = {}
@@ -740,8 +717,7 @@ def get_sub_keyboard(unsubscribed_channels):
                     f"https://t.me/"
                     f"{ch.replace('@', '')}"
                 )
-            )
-        )
+            )        )
 
     builder.row(
         types.InlineKeyboardButton(
@@ -756,13 +732,10 @@ def get_main_inline_menu(user_id=None):
     uid = user_id or 0
     builder = InlineKeyboardBuilder()
 
-    def btn(text, cb, key):
-        eid = menu_emojis.get(key)
-        clean = strip_leading_ordinary_emoji(text) if eid else text
+  def btn(text, cb, key):
         return types.InlineKeyboardButton(
-            text=clean,
+            text=text,
             callback_data=cb,
-            icon_custom_emoji_id=eid if eid else None,
         )
 
     builder.row(btn(tr(uid, "deposit"), "deposit", "deposit"))
