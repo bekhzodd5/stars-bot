@@ -17,7 +17,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 
 BOT_TOKEN = "8982437206:AAEdeSgZluIOS7SnDXSfFGqT8MuNlAglJz0"
 
-ADMIN_ID = 8309246764
+ADMIN_ID = 7414653407
 ADMIN_USERNAME = "@rymbyvv"
 SUB_CHANNELS = ["@rymbyvv_otziv"]
 DATA_FILE = "bot_database.json"
