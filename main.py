@@ -14,13 +14,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 
-
-BOT_TOKEN = os.getenv("8982437206:AAEdeSgZluIOS7SnDXSfFGqT8MuNlAglJz0")
-
-if not BOT_TOKEN:
-    raise RuntimeError(
-        "BOT_TOKEN topilmadi. Serverda BOT_TOKEN environment variable o‘rnating."
-    )
+BOT_TOKEN = "8982437206:AAEdeSgZluIOS7SnDXSfFGqT8MuNlAglJz0"
 
 ADMIN_ID = 8309246764
 ADMIN_USERNAME = "@rymbyvv"
