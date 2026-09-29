@@ -4,6 +4,7 @@ import logging
 import os
 import re
 from datetime import datetime
+from aiohttp import web
 
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.client.default import DefaultBotProperties
@@ -3254,9 +3255,21 @@ async def admin_order_cancel(callback):
     await callback.answer("Bekor qilindi va pul qaytarildi!")
 
 
-async def main():
-    await dp.start_polling(bot)
+async def handle_ping(request):
+    return web.Response(text="Bot is running!")
 
+async def start_web_server():
+    app = web.Application()
+    app.router.add_get("/", handle_ping)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    port = int(os.getenv("PORT", 8080))
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+
+async def main():
+    await start_web_server()
+    await dp.start_polling(bot)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
