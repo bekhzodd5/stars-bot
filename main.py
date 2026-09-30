@@ -35,6 +35,35 @@ PAYMENT_CARD = os.getenv("PAYMENT_CARD") or "9860 3566 3465 1745"
 PAYMENT_CARD_OWNER = os.getenv("PAYMENT_CARD_OWNER") or "Elvira.k"
 
 # ==============================================================================
+# 🌟 TELEGRAM BOT - PREMIUM CUSTOM EMOJI ID-LARI (ANIQ QATORLAR):
+# O'zingizning Custom Emoji ID raqamlaringizni quyidagi qatorlarga qo'ying:
+# ==============================================================================
+DEFAULT_MENU_EMOJIS = {
+    # 📌 ASOSIY MENYU TUGMALARI (Tugmalar oldidagi emojilar):
+    "deposit": "4972482444025398275",     # Hisob to'ldirish tugmasi
+    "stars": "5269623953898357794",       # Stars olish tugmasi
+    "gift": "5458488840022933066",        # Gift olish tugmasi
+    "premium": "5461082978794880873",     # Premium olish tugmasi
+    "balance": "4965219701572503640",     # Hisobim tugmasi
+    "sell": "5460641176983976678",        # Gift sotish tugmasi
+    "referral": "5460997461701050139",    # Referal tizimi tugmasi
+    "top": "5409008750893734809",         # Top reyting tugmasi
+    "settings": "4967490064234840998",    # Sozlamalar tugmasi
+    "admin": "5864197326318342099",       # Admin (Aloqa) tugmasi
+
+    # 📌 ASOSIY MENYU XABARI MATNIDAGI EMOJILAR (Xabar ichida):
+    "main_title": "5008248651038852115",                     # "Asosiy menyu" sarlavhasi yonidagi emoji
+    "main_trust": "5460947592835778324",                     # "Biz bilan ishonchli savdo..." yonidagi emoji
+    "main_channel": "5461137215641895106",                   # "Kanalimizni kuzatib boring..." yonidagi emoji
+    "main_hint": "5271998448042785916",                      # "Kerakli xizmatni tanlang..." yonidagi emoji
+
+    # 📌 QO'SHIMCHA TUGMALAR:
+    "back": "5271599436991052462",                           # Orqaga tugmasi emojisi
+    "cancel": "5316660455744223443",                         # Bekor qilish tugmasi emojisi
+    "check_btn": "5316827280863934685",                      # To'lovni tekshirish tugmasi emojisi
+}
+
+# ==============================================================================
 # PAYHAMYON TO'LOV TIZIMI (PAYMENT GATEWAY) SOZLAMALARI
 # ==============================================================================
 DEFAULT_SHOP_ID = int(os.getenv("PAYHAMYON_SHOP_ID", "121"))
@@ -526,15 +555,15 @@ def editable_text(key, fallback="", user_id=0):
     return str(fallback)
 
 def custom_tag(key):
-    eid = menu_emojis.get(key)
+    eid = menu_emojis.get(key) or DEFAULT_MENU_EMOJIS.get(key)
     return f'<tg-emoji emoji-id="{eid}">✨</tg-emoji> ' if eid else ''
 
 def p_btn(text, cb, key):
-    eid = menu_emojis.get(key)
+    eid = menu_emojis.get(key) or DEFAULT_MENU_EMOJIS.get(key)
     return types.InlineKeyboardButton(text=text, callback_data=cb, icon_custom_emoji_id=eid if eid else None)
 
 def p_url_btn(text, url, key):
-    eid = menu_emojis.get(key)
+    eid = menu_emojis.get(key) or DEFAULT_MENU_EMOJIS.get(key)
     return types.InlineKeyboardButton(text=text, url=url, icon_custom_emoji_id=eid if eid else None)
 
 def phone_allowed(phone):
