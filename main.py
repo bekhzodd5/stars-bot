@@ -3336,8 +3336,6 @@ async def main():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    asyncio.run(main())
-
     "C:/Users/User/AppData/Local/Programs/Python/Python313/Lib/site-packages",
     "C:/Users/User/AppData/Local/Packages/PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0/LocalCache/local-packages/Python313/site-packages"
 
