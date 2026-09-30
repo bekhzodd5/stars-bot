@@ -3336,21 +3336,5 @@ async def main():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    "C:/Users/User/AppData/Local/Programs/Python/Python313/Lib/site-packages",
-    "C:/Users/User/AppData/Local/Packages/PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0/LocalCache/local-packages/Python313/site-packages"
+    asyncio.run(main())
 
-disable-type-errors-in-ide = true
-check-unannotated-defs = false
-
-[errors]
-missing-import = "ignore"
-missing-attribute = "ignore"
-bad-assignment = "ignore"
-not-iterable = "ignore"
-unsupported-operation = "ignore"
-invalid-variance = "ignore"
-no-matching-overload = "ignore"
-bad-argument-type = "ignore"
-
-aiogram>=3.4.1
-aiohttp>=3.9.0
