@@ -40,27 +40,27 @@ PAYMENT_CARD_OWNER = os.getenv("PAYMENT_CARD_OWNER") or "Elvira.k"
 # ==============================================================================
 DEFAULT_MENU_EMOJIS = {
     # 📌 ASOSIY MENYU TUGMALARI (Tugmalar oldidagi emojilar):
-    "deposit": "4972482444025398275",     # Hisob to'ldirish tugmasi
-    "stars": "5269623953898357794",       # Stars olish tugmasi
+    "deposit": "5458435371975065561",     # Hisob to'ldirish tugmasi
+    "stars": "5461082978794880873",       # Stars olish tugmasi
     "gift": "5458488840022933066",        # Gift olish tugmasi
-    "premium": "5461082978794880873",     # Premium olish tugmasi
-    "balance": "4965219701572503640",     # Hisobim tugmasi
-    "sell": "5460641176983976678",        # Gift sotish tugmasi
-    "referral": "5460997461701050139",    # Referal tizimi tugmasi
-    "top": "5409008750893734809",         # Top reyting tugmasi
-    "settings": "4967490064234840998",    # Sozlamalar tugmasi
-    "admin": "5864197326318342099",       # Admin (Aloqa) tugmasi
+    "premium": "5458548196470963108",     # Premium olish tugmasi
+    "balance": "5460972860128380903",     # Hisobim tugmasi
+    "sell": "5458666728978398280",        # Gift sotish tugmasi
+    "referral": "5271927211715216073",    # Referal tizimi tugmasi
+    "top": "5460750711534926792",         # Top reyting tugmasi
+    "settings": "5461054558996282111",    # Sozlamalar tugmasi
+    "admin": "5460810553314264854",       # Admin (Aloqa) tugmasi
 
     # 📌 ASOSIY MENYU XABARI MATNIDAGI EMOJILAR (Xabar ichida):
-    "main_title": "5008248651038852115",                     # "Asosiy menyu" sarlavhasi yonidagi emoji
-    "main_trust": "5460947592835778324",                     # "Biz bilan ishonchli savdo..." yonidagi emoji
-    "main_channel": "5461137215641895106",                   # "Kanalimizni kuzatib boring..." yonidagi emoji
-    "main_hint": "5271998448042785916",                      # "Kerakli xizmatni tanlang..." yonidagi emoji
+    "main_title": "",                     # "Asosiy menyu" sarlavhasi yonidagi emoji
+    "main_trust": "",                     # "Biz bilan ishonchli savdo..." yonidagi emoji
+    "main_channel": "",                   # "Kanalimizni kuzatib boring..." yonidagi emoji
+    "main_hint": "",                      # "Kerakli xizmatni tanlang..." yonidagi emoji
 
     # 📌 QO'SHIMCHA TUGMALAR:
-    "back": "5271599436991052462",                           # Orqaga tugmasi emojisi
-    "cancel": "5316660455744223443",                         # Bekor qilish tugmasi emojisi
-    "check_btn": "5316827280863934685",                      # To'lovni tekshirish tugmasi emojisi
+    "back": "",                           # Orqaga tugmasi emojisi
+    "cancel": "",                         # Bekor qilish tugmasi emojisi
+    "check_btn": "",                      # To'lovni tekshirish tugmasi emojisi
 }
 
 # ==============================================================================
@@ -217,36 +217,68 @@ async def async_cancel_payment(token):
 def default_prices():
     return {
         "stars": {
-            str(s): int(s * 220)
-            for s in range(50, 951, 50)
+            "50": 12500,
+            "100": 22500,
+            "150": 38000,
+            "200": 40000,
+            "250": 55000,
+            "300": 65000,
+            "350": 75000,
+            "400": 85000,
+            "500": 95000,
+            "750": 142500,
+            "1000": 190000,
         },
         "gifts": {
-            "gift_13_1": 2700,
-            "gift_13_2": 2700,
-            "gift_21_1": 4600,
-            "gift_21_2": 4600,
-            "gift_43_1": 9000,
-            "gift_43_2": 9000,
-            "gift_85_1": 18000,
-            "gift_85_2": 18000
+            "gift_15_1": 3500,
+            "gift_15_2": 3500,
+            "gift_25_1": 6500,
+            "gift_25_2": 6500,
+            "gift_50_1": 10500,
+            "gift_50_2": 10500,
+            "gift_50_3": 10500,
+            "gift_50_4": 10500,
+            "gift_100_1": 20000,
+            "gift_100_2": 20000,
+            "gift_100_3": 20000,
+            "gift_13_1": 3500,
+            "gift_13_2": 3500,
+            "gift_21_1": 6500,
+            "gift_21_2": 6500,
+            "gift_43_1": 10500,
+            "gift_43_2": 10500,
+            "gift_85_1": 20000,
+            "gift_85_2": 20000
         },
         "premium": {
             "prem_1": 45000,
-            "prem_3": 180000,
-            "prem_6": 310000,
-            "prem_12": 435000
+            "prem_3": 155000,
+            "prem_6": 210000,
+            "prem_12": 285000,
+            "prem_12_gift": 385000
         },
         "sell_gifts": {
-            "sell_gift_bear": 2000,
-            "sell_gift_heart": 2000,
-            "sell_gift_box": 3300,
-            "sell_gift_rose": 3300,
-            "sell_gift_rocket": 6600,
-            "sell_gift_cake": 6600,
-            "sell_gift_gem": 13200,
-            "sell_gift_ring": 13200
+            "sell_gift_ayiqcha": 1500,
+            "sell_gift_yurak": 1500,
+            "sell_gift_atirgul": 2500,
+            "sell_gift_quti": 2500,
+            "sell_gift_lola": 4500,
+            "sell_gift_raketa": 4500,
+            "sell_gift_tort": 4500,
+            "sell_gift_shampan": 4500,
+            "sell_gift_kubok": 9000,
+            "sell_gift_olmos": 9000,
+            "sell_gift_yuzuk": 9000,
+            "sell_gift_bear": 1500,
+            "sell_gift_heart": 1500,
+            "sell_gift_rose": 2500,
+            "sell_gift_box": 2500,
+            "sell_gift_rocket": 4500,
+            "sell_gift_cake": 4500,
+            "sell_gift_gem": 9000,
+            "sell_gift_ring": 9000
         },
-        "custom_star": 220,
+        "custom_star": 225,
         "referral_reward": 1.5,
         "menu_emojis": {},
         "purchase_history": [],
@@ -620,8 +652,33 @@ def add_star_referral(user_id):
 
 def build_products():
     stars = {}
-    for s in range(50, 951, 50):
-        p = prices["stars"].get(str(s), s * 220)
+    star_items = [
+        (50, 12500),
+        (100, 22500),
+        (150, 38000),
+        (200, 40000),
+        (250, 55000),
+        (300, 65000),
+        (350, 75000),
+        (400, 85000),
+        (500, 95000),
+        (750, 142500),
+        (1000, 190000)
+    ]
+    configured_stars = {}
+    if "stars" in prices and isinstance(prices["stars"], dict):
+        for k, v in prices["stars"].items():
+            if str(k).isdigit():
+                try:
+                    configured_stars[int(k)] = int(v)
+                except Exception:
+                    pass
+
+    if not configured_stars:
+        configured_stars = {count: default_p for count, default_p in star_items}
+
+    for s in sorted(configured_stars.keys()):
+        p = configured_stars[s]
         stars[f"stars_{s}"] = {
             "name": f"{s} Stars - {money(p)} so'm",
             "formatted": f"{custom_tag('stars')}<b>{s} Stars</b> - {money(p)} so'm",
@@ -630,23 +687,36 @@ def build_products():
         }
 
     gifts_info = {
-        "gift_13_1": 13, "gift_13_2": 13,
-        "gift_21_1": 21, "gift_21_2": 21,
-        "gift_43_1": 43, "gift_43_2": 43,
-        "gift_85_1": 85, "gift_85_2": 85
+        "gift_15_1": (15, "🧸 Ayiqcha"),
+        "gift_15_2": (15, "💖 Yurakcha"),
+        "gift_25_1": (25, "🌹 Qizil Atirgul"),
+        "gift_25_2": (25, "🎁 Syurpriz quti"),
+        "gift_50_1": (50, "💐 Lola guldastasi"),
+        "gift_50_2": (50, "🚀 Kosmik Raketa"),
+        "gift_50_3": (50, "🎂 Tug'ilgan kun torti"),
+        "gift_50_4": (50, "🍾 Shampan"),
+        "gift_100_1": (100, "🏆 Oltin Kubok"),
+        "gift_100_2": (100, "💎 Moviy Olmos"),
+        "gift_100_3": (100, "💍 Brilliant Uzuk")
     }
 
     gifts = {}
-    for key, count in gifts_info.items():
+    for key, (count, name) in gifts_info.items():
         p = prices["gifts"].get(key, 0)
         gifts[key] = {
-            "name": f"{count} stars - {money(p)} so'm",
-            "formatted": f"{custom_tag(key)}{count} stars - {money(p)} so'm",
-            "price": int(p)
+            "name": f"{name} - {money(p)} so'm",
+            "formatted": f"{custom_tag(key)}<b>{name}</b> ({count} ⭐) - {money(p)} so'm",
+            "price": int(p),
+            "title": name,
+            "stars_count": count
         }
 
     premium_names = {
-        "prem_1": "1 oy", "prem_3": "3 oy", "prem_6": "6 oy", "prem_12": "1 yil"
+        "prem_1": "1 Oylik Premium",
+        "prem_3": "3 Oylik Premium",
+        "prem_6": "6 Oylik Premium",
+        "prem_12": "1 Yillik Premium (Akkauntga kirib)",
+        "prem_12_gift": "1 Yillik Premium (Sovg'a tariqasida)"
     }
 
     premium = {}
@@ -655,7 +725,8 @@ def build_products():
         premium[key] = {
             "name": f"{title} - {money(p)} so'm",
             "formatted": f"{custom_tag(key)}<b>{title}</b> - {money(p)} so'm",
-            "price": int(p)
+            "price": int(p),
+            "title": title
         }
 
     return stars, gifts, premium
@@ -1038,25 +1109,32 @@ CATEGORY_ITEMS = {
         ("prem_1", "Premium (1 oy)"),
         ("prem_3", "Premium (3 oy)"),
         ("prem_6", "Premium (6 oy)"),
-        ("prem_12", "Premium (1 yil)"),
+        ("prem_12", "Premium (1 yil - Kirib)"),
+        ("prem_12_gift", "Premium (1 yil - Sovg'a)"),
     ],
     "cat_gifts": [
-        ("gift_13_1", "Gift 13 Stars (1)"),
-        ("gift_13_2", "Gift 13 Stars (2)"),
-        ("gift_21_1", "Gift 21 Stars (1)"),
-        ("gift_21_2", "Gift 21 Stars (2)"),
-        ("gift_43_1", "Gift 43 Stars (1)"),
-        ("gift_43_2", "Gift 43 Stars (2)"),
-        ("gift_85_1", "Gift 85 Stars (1)"),
-        ("gift_85_2", "Gift 85 Stars (2)"),
-        ("sell_gift_bear", "Gift sotish: Bear"),
-        ("sell_gift_heart", "Gift sotish: Heart"),
-        ("sell_gift_box", "Gift sotish: Box"),
-        ("sell_gift_rose", "Gift sotish: Rose"),
-        ("sell_gift_rocket", "Gift sotish: Rocket"),
-        ("sell_gift_cake", "Gift sotish: Cake"),
-        ("sell_gift_gem", "Gift sotish: Gem"),
-        ("sell_gift_ring", "Gift sotish: Ring"),
+        ("gift_15_1", "Gift: 🧸 Ayiqcha (15 ⭐)"),
+        ("gift_15_2", "Gift: 💖 Yurakcha (15 ⭐)"),
+        ("gift_25_1", "Gift: 🌹 Qizil Atirgul (25 ⭐)"),
+        ("gift_25_2", "Gift: 🎁 Syurpriz quti (25 ⭐)"),
+        ("gift_50_1", "Gift: 💐 Lola guldastasi (50 ⭐)"),
+        ("gift_50_2", "Gift: 🚀 Kosmik Raketa (50 ⭐)"),
+        ("gift_50_3", "Gift: 🎂 Tug'ilgan kun torti (50 ⭐)"),
+        ("gift_50_4", "Gift: 🍾 Shampan (50 ⭐)"),
+        ("gift_100_1", "Gift: 🏆 Oltin Kubok (100 ⭐)"),
+        ("gift_100_2", "Gift: 💎 Moviy Olmos (100 ⭐)"),
+        ("gift_100_3", "Gift: 💍 Brilliant Uzuk (100 ⭐)"),
+        ("sell_gift_ayiqcha", "Gift sotish: 🧸 Ayiqcha"),
+        ("sell_gift_yurak", "Gift sotish: 💖 Yurakcha"),
+        ("sell_gift_atirgul", "Gift sotish: 🌹 Qizil Atirgul"),
+        ("sell_gift_quti", "Gift sotish: 🎁 Syurpriz quti"),
+        ("sell_gift_lola", "Gift sotish: 💐 Lola"),
+        ("sell_gift_raketa", "Gift sotish: 🚀 Raketa"),
+        ("sell_gift_tort", "Gift sotish: 🎂 Tort"),
+        ("sell_gift_shampan", "Gift sotish: 🍾 Shampan"),
+        ("sell_gift_kubok", "Gift sotish: 🏆 Oltin Kubok"),
+        ("sell_gift_olmos", "Gift sotish: 💎 Moviy Olmos"),
+        ("sell_gift_yuzuk", "Gift sotish: 💍 Brilliant Uzuk"),
     ],
     "cat_top": [
         ("lang_uz", "Til: O'zbekcha"),
@@ -1323,11 +1401,15 @@ async def price_group(callback: types.CallbackQuery):
             )
         title = "Premium narxlari"
     else:
-        sell_names = {
-            "sell_gift_bear": "Bear", "sell_gift_heart": "Heart", "sell_gift_box": "Box", "sell_gift_rose": "Rose",
-            "sell_gift_rocket": "Rocket", "sell_gift_cake": "Cake", "sell_gift_gem": "Gem", "sell_gift_ring": "Ring"
-        }
-        for key, name in sell_names.items():
+        active_sell_keys = [
+            "sell_gift_ayiqcha", "sell_gift_yurak",
+            "sell_gift_atirgul", "sell_gift_quti",
+            "sell_gift_lola", "sell_gift_raketa",
+            "sell_gift_tort", "sell_gift_shampan",
+            "sell_gift_kubok", "sell_gift_olmos", "sell_gift_yuzuk"
+        ]
+        for key in active_sell_keys:
+            name = SELL_GIFT_INFO.get(key, key)
             builder.row(
                 p_btn(f"{name} — {money(prices['sell_gifts'].get(key, 0))} so'm", f"price_edit_{key}", key)
             )
@@ -2717,7 +2799,7 @@ async def stars_menu(callback: types.CallbackQuery):
 @dp.callback_query(F.data == "custom_stars")
 async def custom_stars_start(callback: types.CallbackQuery, state: FSMContext):
     uid = callback.from_user.id
-    one_star_price = prices.get("custom_star", 220)
+    one_star_price = prices.get("custom_star", 225)
     text = (
         f"<blockquote>{custom_tag('custom_stars')}<b>Boshqa miqdorda Stars olish</b>\n\n"
         f"1 ta Stars narxi: <b>{money(one_star_price)} so'm</b>\n\n"
@@ -2796,7 +2878,7 @@ async def gift_menu(callback: types.CallbackQuery):
     uid = callback.from_user.id
     builder = InlineKeyboardBuilder()
     for key, data in GIFT_PRICES.items():
-        builder.add(p_btn(data["name"], f"buyprod_{key}", key))
+        builder.add(p_btn(data["name"], f"buyprod_{key}", key if key in menu_emojis else "gift"))
     builder.adjust(2)
     builder.row(p_btn(tr(uid, "back"), "back_main", "back"))
 
@@ -2808,8 +2890,36 @@ async def gift_menu(callback: types.CallbackQuery):
 
 
 SELL_GIFT_INFO = {
-    "sell_gift_bear": "Bear", "sell_gift_heart": "Heart", "sell_gift_box": "Box", "sell_gift_rose": "Rose",
-    "sell_gift_rocket": "Rocket", "sell_gift_cake": "Cake", "sell_gift_gem": "Gem", "sell_gift_ring": "Ring"
+    "sell_gift_ayiqcha": "🧸 Ayiqcha",
+    "sell_gift_yurak": "💖 Yurakcha",
+    "sell_gift_atirgul": "🌹 Qizil Atirgul",
+    "sell_gift_quti": "🎁 Syurpriz quti",
+    "sell_gift_lola": "💐 Lola guldastasi",
+    "sell_gift_raketa": "🚀 Kosmik Raketa",
+    "sell_gift_tort": "🎂 Tug'ilgan kun torti",
+    "sell_gift_shampan": "🍾 Shampan",
+    "sell_gift_kubok": "🏆 Oltin Kubok",
+    "sell_gift_olmos": "💎 Moviy Olmos",
+    "sell_gift_yuzuk": "💍 Brilliant Uzuk",
+    "sell_gift_bear": "🧸 Ayiqcha",
+    "sell_gift_heart": "💖 Yurakcha",
+    "sell_gift_box": "🎁 Syurpriz quti",
+    "sell_gift_rose": "🌹 Qizil Atirgul",
+    "sell_gift_rocket": "🚀 Kosmik Raketa",
+    "sell_gift_cake": "🎂 Tug'ilgan kun torti",
+    "sell_gift_gem": "💎 Moviy Olmos",
+    "sell_gift_ring": "💍 Brilliant Uzuk"
+}
+
+SELL_GIFT_ALIAS = {
+    "sell_gift_bear": "sell_gift_ayiqcha",
+    "sell_gift_heart": "sell_gift_yurak",
+    "sell_gift_box": "sell_gift_quti",
+    "sell_gift_rose": "sell_gift_atirgul",
+    "sell_gift_rocket": "sell_gift_raketa",
+    "sell_gift_cake": "sell_gift_tort",
+    "sell_gift_gem": "sell_gift_olmos",
+    "sell_gift_ring": "sell_gift_yuzuk"
 }
 
 
@@ -2817,9 +2927,21 @@ SELL_GIFT_INFO = {
 async def sell_gift_start(callback: types.CallbackQuery):
     uid = callback.from_user.id
     builder = InlineKeyboardBuilder()
-    for key, name in SELL_GIFT_INFO.items():
+    active_keys = [
+        "sell_gift_ayiqcha", "sell_gift_yurak",
+        "sell_gift_atirgul", "sell_gift_quti",
+        "sell_gift_lola", "sell_gift_raketa",
+        "sell_gift_tort", "sell_gift_shampan",
+        "sell_gift_kubok", "sell_gift_olmos", "sell_gift_yuzuk"
+    ]
+    for key in active_keys:
+        name = SELL_GIFT_INFO.get(key, key)
+        p = prices['sell_gifts'].get(key)
+        if p is None:
+            alias = SELL_GIFT_ALIAS.get(key)
+            p = prices['sell_gifts'].get(alias, 0) if alias else 0
         builder.add(
-            p_btn(f"{name} — {money(prices['sell_gifts'].get(key, 0))} so'm", key, key)
+            p_btn(f"{name} — {money(p)} so'm", key, key if key in menu_emojis else "sell")
         )
     builder.adjust(2)
     builder.row(p_btn(tr(uid, "back"), "back_main", "back"))
@@ -2839,7 +2961,11 @@ async def process_gift_choice(call: types.CallbackQuery, state: FSMContext):
         return
 
     gift_name = SELL_GIFT_INFO[key]
-    price_val = prices['sell_gifts'].get(key, 0)
+    price_val = prices['sell_gifts'].get(key)
+    if price_val is None:
+        alias = SELL_GIFT_ALIAS.get(key)
+        price_val = prices['sell_gifts'].get(alias, 0) if alias else 0
+
     price_str = f"{money(price_val)} so'm"
     await state.update_data(gift_name=gift_name, price=price_str, price_val=price_val)
     text = (
@@ -3002,9 +3128,10 @@ async def premium_menu(callback: types.CallbackQuery):
 @dp.callback_query(F.data == "prem_auto_menu")
 async def premium_auto_menu(callback: types.CallbackQuery):
     builder = InlineKeyboardBuilder()
-    for key in ("prem_3", "prem_6", "prem_12"):
-        data = PREMIUM_PRICES[key]
-        builder.row(p_btn(data["name"], f"buyprod_{key}", key))
+    for key in ("prem_3", "prem_6", "prem_12_gift", "prem_12"):
+        if key in PREMIUM_PRICES:
+            data = PREMIUM_PRICES[key]
+            builder.row(p_btn(data["name"], f"buyprod_{key}", key if key in menu_emojis else "premium"))
     builder.row(p_btn("Orqaga", "buy_premium", "back"))
 
     await callback.message.edit_text(
@@ -3016,9 +3143,11 @@ async def premium_auto_menu(callback: types.CallbackQuery):
 
 @dp.callback_query(F.data == "prem_admin_menu")
 async def premium_admin_menu(callback: types.CallbackQuery):
-    data = PREMIUM_PRICES["prem_1"]
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn(data["name"], "buyprod_prem_1", "prem_1"))
+    for key in ("prem_1", "prem_12"):
+        if key in PREMIUM_PRICES:
+            data = PREMIUM_PRICES[key]
+            builder.row(p_btn(data["name"], f"buyprod_{key}", key if key in menu_emojis else "premium"))
     builder.row(p_btn("Orqaga", "buy_premium", "back"))
 
     await callback.message.edit_text(
