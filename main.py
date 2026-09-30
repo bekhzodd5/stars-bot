@@ -672,11 +672,58 @@ def build_top_text(user_id, period):
     return text + "</blockquote>"
 
 def get_balance(user_id):
-    return user_balances.get(user_id, 0)
+    uid_str = str(user_id)
+    bal = user_balances.get(uid_str)
+    if bal is None and isinstance(user_id, int):
+        bal = user_balances.get(user_id)
+    if bal is None:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        db_path = os.path.join(base_dir, "data", "database.json")
+        if not os.path.exists(db_path):
+            db_path = os.path.join("data", "database.json")
+        if os.path.exists(db_path):
+            try:
+                with open(db_path, "r", encoding="utf-8") as f:
+                    web_db = json.load(f)
+                u = web_db.get("users", {}).get(uid_str)
+                if u and "balance" in u:
+                    bal = u["balance"]
+                    user_balances[uid_str] = bal
+                    save_data()
+            except Exception:
+                pass
+    return bal if bal is not None else 0
 
 def update_balance(user_id, amount):
-    user_balances[user_id] = get_balance(user_id) + amount
+    uid_str = str(user_id)
+    new_bal = get_balance(user_id) + amount
+    user_balances[uid_str] = new_bal
     save_data()
+
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(base_dir, "data", "database.json")
+    if not os.path.exists(db_path):
+        db_path = os.path.join("data", "database.json")
+    if os.path.exists(db_path):
+        try:
+            with open(db_path, "r", encoding="utf-8") as f:
+                web_db = json.load(f)
+            if "users" not in web_db:
+                web_db["users"] = {}
+            if uid_str in web_db["users"]:
+                web_db["users"][uid_str]["balance"] = new_bal
+            else:
+                web_db["users"][uid_str] = {
+                    "id": uid_str,
+                    "first_name": "Foydalanuvchi",
+                    "username": "",
+                    "balance": new_bal,
+                    "created_at": datetime.now().isoformat()
+                }
+            with open(db_path, "w", encoding="utf-8") as f:
+                json.dump(web_db, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            logging.error(f"Error syncing balance to web_db: {e}")
 
 def get_stars_balance(user_id):
     return user_stars_balances.get(user_id, 0.0)
@@ -3253,6 +3300,164 @@ async def legacy_sell_done(call: types.CallbackQuery):
 async def legacy_sell_reject(call: types.CallbackQuery):
     call.data = call.data.replace("sell_reject_", "admin_sell_reject_")
     await admin_sell_reject(call)
+
+
+@dp.callback_query(F.data.startswith("approve_"))
+async def handle_webapp_order_approve(call: types.CallbackQuery):
+    if call.from_user.id != ADMIN_ID:
+        await call.answer("Faqat admin uchun!", show_alert=True)
+        return
+
+    order_id = call.data.replace("approve_", "")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(base_dir, "data", "database.json")
+    if not os.path.exists(db_path):
+        db_path = os.path.join("data", "database.json")
+
+    if not os.path.exists(db_path):
+        await call.answer("❌ database.json topilmadi!", show_alert=True)
+        return
+
+    try:
+        with open(db_path, "r", encoding="utf-8") as f:
+            web_db = json.load(f)
+    except Exception as e:
+        await call.answer(f"Xatolik: {e}", show_alert=True)
+        return
+
+    tx = next((t for t in web_db.get("transactions", []) if t.get("id") == order_id), None)
+    if not tx:
+        await call.answer("❌ Buyurtma topilmadi!", show_alert=True)
+        return
+
+    if tx.get("status") != "Kutilmoqda":
+        await call.answer(f"ℹ️ Bu buyurtma holati allaqachon: {tx.get('status')}", show_alert=True)
+        return
+
+    user_id = str(tx.get("user_id"))
+    amount = int(tx.get("amount", 0))
+
+    if "users" not in web_db:
+        web_db["users"] = {}
+    user_obj = web_db["users"].get(user_id)
+
+    current_bal = user_obj.get("balance", 0) if user_obj else get_balance(user_id)
+    if current_bal < amount:
+        await call.answer("⚠️ Foydalanuvchi balansida mablag' yetarli emas!", show_alert=True)
+        return
+
+    new_bal = current_bal - amount
+    if user_obj:
+        user_obj["balance"] = new_bal
+    tx["status"] = "Bajarildi"
+
+    try:
+        with open(db_path, "w", encoding="utf-8") as f:
+            json.dump(web_db, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        logging.error(f"Error saving database.json: {e}")
+
+    # Synchronize balance with bot_database.json
+    user_balances[user_id] = new_bal
+    save_data()
+
+    # Also notify local server.js if running
+    try:
+        send_request("http://127.0.0.1:3000/api/orders/approve", {"order_id": order_id})
+    except Exception:
+        pass
+
+    # Notify customer in Telegram
+    if user_id.isdigit():
+        try:
+            await bot.send_message(
+                chat_id=int(user_id),
+                text=(
+                    f"<blockquote>🎉 <b>Xaridingiz muvaffaqiyatli yetkazildi!</b>\n\n"
+                    f"🆔 Buyurtma: <code>#{tx['id']}</code>\n"
+                    f"📦 Mahsulot: <b>{tx.get('name', 'Mahsulot')}</b>\n"
+                    f"👤 Qabul qiluvchi: <b>{tx.get('recipient', '')}</b>\n"
+                    f"💰 Yechilgan summa: <b>{money(amount)} so'm</b>\n"
+                    f"💳 Yangi balansingiz: <b>{money(new_bal)} so'm</b>\n\n"
+                    f"<i>STARBOZOR xizmatidan foydalanganingiz uchun rahmat!</i></blockquote>"
+                )
+            )
+        except Exception as e:
+            logging.error(f"Foydalanuvchiga tasdiq xabari yuborishda xatolik: {e}")
+
+    await call.message.edit_text(
+        call.message.text + f"\n\n<blockquote>✅ <b>BUYURTMA TASDIQLANDI VA YUBORILDI</b>\n"
+                            f"Yangi foydalanuvchi balansi: <b>{money(new_bal)} so'm</b>\n"
+                            f"Holat: <b>Bajarildi ✅</b></blockquote>"
+    )
+    await call.answer("✅ Buyurtma tasdiqlandi va yetkazildi!", show_alert=True)
+
+
+@dp.callback_query(F.data.startswith("reject_") | F.data.startswith("cancel_"))
+async def handle_webapp_order_reject(call: types.CallbackQuery):
+    if call.from_user.id != ADMIN_ID:
+        await call.answer("Faqat admin uchun!", show_alert=True)
+        return
+
+    order_id = call.data.replace("reject_", "").replace("cancel_", "")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(base_dir, "data", "database.json")
+    if not os.path.exists(db_path):
+        db_path = os.path.join("data", "database.json")
+
+    if not os.path.exists(db_path):
+        await call.answer("❌ database.json topilmadi!", show_alert=True)
+        return
+
+    try:
+        with open(db_path, "r", encoding="utf-8") as f:
+            web_db = json.load(f)
+    except Exception as e:
+        await call.answer(f"Xatolik: {e}", show_alert=True)
+        return
+
+    tx = next((t for t in web_db.get("transactions", []) if t.get("id") == order_id), None)
+    if not tx:
+        await call.answer("❌ Buyurtma topilmadi!", show_alert=True)
+        return
+
+    if tx.get("status") != "Kutilmoqda":
+        await call.answer(f"Bu buyurtma allaqachon: {tx.get('status')}", show_alert=True)
+        return
+
+    tx["status"] = "Bekor qilindi"
+
+    try:
+        with open(db_path, "w", encoding="utf-8") as f:
+            json.dump(web_db, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        logging.error(f"Error saving database.json: {e}")
+
+    try:
+        send_request("http://127.0.0.1:3000/api/orders/reject", {"order_id": order_id})
+    except Exception:
+        pass
+
+    user_id = str(tx.get("user_id"))
+    if user_id.isdigit():
+        try:
+            await bot.send_message(
+                chat_id=int(user_id),
+                text=(
+                    f"<blockquote>❌ <b>Buyurtmangiz bekor qilindi</b>\n\n"
+                    f"🆔 Buyurtma: <code>#{tx['id']}</code>\n"
+                    f"📦 Mahsulot: <b>{tx.get('name', 'Mahsulot')}</b>\n"
+                    f"Mablag' hisobingizdan yechilmadi.\n"
+                    f"Savollar bo'lsa adminga murojaat qiling: {ADMIN_USERNAME}</blockquote>"
+                )
+            )
+        except Exception:
+            pass
+
+    await call.message.edit_text(
+        call.message.text + "\n\n<blockquote>❌ <b>BUYURTMA BEKOR QILINDI!</b> Mablag' yechilmadi.</blockquote>"
+    )
+    await call.answer("❌ Buyurtma bekor qilindi.", show_alert=True)
 
 
 @dp.callback_query(F.data == "buy_premium")
