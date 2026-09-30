@@ -3308,75 +3308,96 @@ async def handle_webapp_order_approve(call: types.CallbackQuery):
         await call.answer("Faqat admin uchun!", show_alert=True)
         return
 
-    order_id = call.data.replace("approve_", "")
+    raw_payload = call.data.replace("approve_", "")
+    parts = raw_payload.split("_")
+    order_id = parts[0]
+    cb_user_id = parts[1] if len(parts) > 1 else None
+    cb_amount = int(parts[2]) if len(parts) > 2 and parts[2].isdigit() else None
+
+    # Parse details from message text as reliable fallback
+    msg_txt = call.message.text or ""
+    m_user = re.search(r"Xaridor Telegram ID:\s*(\d+)", msg_txt)
+    m_amount = re.search(r"Summa:\s*([\d\s]+)\s*so['’`]?m", msg_txt)
+    m_prod = re.search(r"Mahsulot:\s*([^\n]+)", msg_txt)
+    m_rec = re.search(r"Qabul qiluvchi:\s*([^\n]+)", msg_txt)
+
+    user_id = cb_user_id or (m_user.group(1) if m_user else None)
+    amount = cb_amount if cb_amount is not None else (int(re.sub(r"\D", "", m_amount.group(1))) if m_amount else 0)
+    prod_name = m_prod.group(1).strip() if m_prod else "Mahsulot"
+    recipient = m_rec.group(1).strip() if m_rec else ""
+
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(base_dir, "data", "database.json")
-    if not os.path.exists(db_path):
-        db_path = os.path.join("data", "database.json")
+    possible_paths = [
+        os.path.join(base_dir, "data", "database.json"),
+        os.path.join(base_dir, "..", "wep app", "data", "database.json"),
+        os.path.join("data", "database.json")
+    ]
+    web_db = None
+    db_path = None
+    for p in possible_paths:
+        if os.path.exists(p):
+            try:
+                with open(p, "r", encoding="utf-8") as f:
+                    web_db = json.load(f)
+                db_path = p
+                break
+            except Exception:
+                pass
 
-    if not os.path.exists(db_path):
-        await call.answer("❌ database.json topilmadi!", show_alert=True)
+    tx = None
+    if web_db:
+        tx = next((t for t in web_db.get("transactions", []) if t.get("id") == order_id), None)
+        if tx:
+            user_id = str(tx.get("user_id", user_id))
+            amount = int(tx.get("amount", amount))
+            prod_name = tx.get("name", prod_name)
+            recipient = tx.get("recipient", recipient)
+            if tx.get("status") != "Kutilmoqda":
+                await call.answer(f"ℹ️ Bu buyurtma allaqachon: {tx.get('status')}", show_alert=True)
+                return
+
+    if not user_id:
+        await call.answer("❌ Xaridor ID topilmadi!", show_alert=True)
         return
 
-    try:
-        with open(db_path, "r", encoding="utf-8") as f:
-            web_db = json.load(f)
-    except Exception as e:
-        await call.answer(f"Xatolik: {e}", show_alert=True)
-        return
+    current_bal = get_balance(user_id)
+    if web_db and "users" in web_db and user_id in web_db["users"]:
+        current_bal = web_db["users"][user_id].get("balance", current_bal)
 
-    tx = next((t for t in web_db.get("transactions", []) if t.get("id") == order_id), None)
-    if not tx:
-        await call.answer("❌ Buyurtma topilmadi!", show_alert=True)
-        return
-
-    if tx.get("status") != "Kutilmoqda":
-        await call.answer(f"ℹ️ Bu buyurtma holati allaqachon: {tx.get('status')}", show_alert=True)
-        return
-
-    user_id = str(tx.get("user_id"))
-    amount = int(tx.get("amount", 0))
-
-    if "users" not in web_db:
-        web_db["users"] = {}
-    user_obj = web_db["users"].get(user_id)
-
-    current_bal = user_obj.get("balance", 0) if user_obj else get_balance(user_id)
     if current_bal < amount:
         await call.answer("⚠️ Foydalanuvchi balansida mablag' yetarli emas!", show_alert=True)
         return
 
     new_bal = current_bal - amount
-    if user_obj:
-        user_obj["balance"] = new_bal
-    tx["status"] = "Bajarildi"
 
-    try:
-        with open(db_path, "w", encoding="utf-8") as f:
-            json.dump(web_db, f, indent=2, ensure_ascii=False)
-    except Exception as e:
-        logging.error(f"Error saving database.json: {e}")
+    if web_db and db_path:
+        if tx:
+            tx["status"] = "Bajarildi"
+        if "users" in web_db and user_id in web_db["users"]:
+            web_db["users"][user_id]["balance"] = new_bal
+        try:
+            with open(db_path, "w", encoding="utf-8") as f:
+                json.dump(web_db, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            logging.error(f"Error saving database.json: {e}")
 
-    # Synchronize balance with bot_database.json
-    user_balances[user_id] = new_bal
+    user_balances[str(user_id)] = new_bal
     save_data()
 
-    # Also notify local server.js if running
     try:
         send_request("http://127.0.0.1:3000/api/orders/approve", {"order_id": order_id})
     except Exception:
         pass
 
-    # Notify customer in Telegram
-    if user_id.isdigit():
+    if str(user_id).isdigit():
         try:
             await bot.send_message(
                 chat_id=int(user_id),
                 text=(
                     f"<blockquote>🎉 <b>Xaridingiz muvaffaqiyatli yetkazildi!</b>\n\n"
-                    f"🆔 Buyurtma: <code>#{tx['id']}</code>\n"
-                    f"📦 Mahsulot: <b>{tx.get('name', 'Mahsulot')}</b>\n"
-                    f"👤 Qabul qiluvchi: <b>{tx.get('recipient', '')}</b>\n"
+                    f"🆔 Buyurtma: <code>#{order_id}</code>\n"
+                    f"📦 Mahsulot: <b>{prod_name}</b>\n"
+                    f"👤 Qabul qiluvchi: <b>{recipient}</b>\n"
                     f"💰 Yechilgan summa: <b>{money(amount)} so'm</b>\n"
                     f"💳 Yangi balansingiz: <b>{money(new_bal)} so'm</b>\n\n"
                     f"<i>STARBOZOR xizmatidan foydalanganingiz uchun rahmat!</i></blockquote>"
@@ -3399,54 +3420,61 @@ async def handle_webapp_order_reject(call: types.CallbackQuery):
         await call.answer("Faqat admin uchun!", show_alert=True)
         return
 
-    order_id = call.data.replace("reject_", "").replace("cancel_", "")
+    raw_payload = call.data.replace("reject_", "").replace("cancel_", "")
+    parts = raw_payload.split("_")
+    order_id = parts[0]
+    cb_user_id = parts[1] if len(parts) > 1 else None
+
+    msg_txt = call.message.text or ""
+    m_user = re.search(r"Xaridor Telegram ID:\s*(\d+)", msg_txt)
+    m_prod = re.search(r"Mahsulot:\s*([^\n]+)", msg_txt)
+    user_id = cb_user_id or (m_user.group(1) if m_user else None)
+    prod_name = m_prod.group(1).strip() if m_prod else "Mahsulot"
+
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(base_dir, "data", "database.json")
-    if not os.path.exists(db_path):
-        db_path = os.path.join("data", "database.json")
+    possible_paths = [
+        os.path.join(base_dir, "data", "database.json"),
+        os.path.join(base_dir, "..", "wep app", "data", "database.json"),
+        os.path.join("data", "database.json")
+    ]
+    web_db = None
+    db_path = None
+    for p in possible_paths:
+        if os.path.exists(p):
+            try:
+                with open(p, "r", encoding="utf-8") as f:
+                    web_db = json.load(f)
+                db_path = p
+                break
+            except Exception:
+                pass
 
-    if not os.path.exists(db_path):
-        await call.answer("❌ database.json topilmadi!", show_alert=True)
-        return
-
-    try:
-        with open(db_path, "r", encoding="utf-8") as f:
-            web_db = json.load(f)
-    except Exception as e:
-        await call.answer(f"Xatolik: {e}", show_alert=True)
-        return
-
-    tx = next((t for t in web_db.get("transactions", []) if t.get("id") == order_id), None)
-    if not tx:
-        await call.answer("❌ Buyurtma topilmadi!", show_alert=True)
-        return
-
-    if tx.get("status") != "Kutilmoqda":
-        await call.answer(f"Bu buyurtma allaqachon: {tx.get('status')}", show_alert=True)
-        return
-
-    tx["status"] = "Bekor qilindi"
-
-    try:
-        with open(db_path, "w", encoding="utf-8") as f:
-            json.dump(web_db, f, indent=2, ensure_ascii=False)
-    except Exception as e:
-        logging.error(f"Error saving database.json: {e}")
+    if web_db and db_path:
+        tx = next((t for t in web_db.get("transactions", []) if t.get("id") == order_id), None)
+        if tx:
+            if tx.get("status") != "Kutilmoqda":
+                await call.answer(f"ℹ️ Bu buyurtma holati allaqachon: {tx.get('status')}", show_alert=True)
+                return
+            tx["status"] = "Bekor qilindi"
+            try:
+                with open(db_path, "w", encoding="utf-8") as f:
+                    json.dump(web_db, f, indent=2, ensure_ascii=False)
+            except Exception as e:
+                logging.error(f"Error saving database.json: {e}")
 
     try:
         send_request("http://127.0.0.1:3000/api/orders/reject", {"order_id": order_id})
     except Exception:
         pass
 
-    user_id = str(tx.get("user_id"))
-    if user_id.isdigit():
+    if user_id and str(user_id).isdigit():
         try:
             await bot.send_message(
                 chat_id=int(user_id),
                 text=(
                     f"<blockquote>❌ <b>Buyurtmangiz bekor qilindi</b>\n\n"
-                    f"🆔 Buyurtma: <code>#{tx['id']}</code>\n"
-                    f"📦 Mahsulot: <b>{tx.get('name', 'Mahsulot')}</b>\n"
+                    f"🆔 Buyurtma: <code>#{order_id}</code>\n"
+                    f"📦 Mahsulot: <b>{prod_name}</b>\n"
                     f"Mablag' hisobingizdan yechilmadi.\n"
                     f"Savollar bo'lsa adminga murojaat qiling: {ADMIN_USERNAME}</blockquote>"
                 )
