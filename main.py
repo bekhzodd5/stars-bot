@@ -40,27 +40,27 @@ PAYMENT_CARD_OWNER = os.getenv("PAYMENT_CARD_OWNER") or "Elvira.k"
 # ==============================================================================
 DEFAULT_MENU_EMOJIS = {
     # 📌 ASOSIY MENYU TUGMALARI (Tugmalar oldidagi emojilar):
-    "deposit": "5458435371975065561",     # Hisob to'ldirish tugmasi
-    "stars": "5461082978794880873",       # Stars olish tugmasi
+    "deposit": "4972482444025398275",     # Hisob to'ldirish tugmasi
+    "stars": "5269623953898357794",       # Stars olish tugmasi
     "gift": "5458488840022933066",        # Gift olish tugmasi
-    "premium": "5458548196470963108",     # Premium olish tugmasi
-    "balance": "5460972860128380903",     # Hisobim tugmasi
-    "sell": "5458666728978398280",        # Gift sotish tugmasi
-    "referral": "5271927211715216073",    # Referal tizimi tugmasi
-    "top": "5460750711534926792",         # Top reyting tugmasi
-    "settings": "5461054558996282111",    # Sozlamalar tugmasi
-    "admin": "5460810553314264854",       # Admin (Aloqa) tugmasi
+    "premium": "5461082978794880873",     # Premium olish tugmasi
+    "balance": "4965219701572503640",     # Hisobim tugmasi
+    "sell": "5460641176983976678",        # Gift sotish tugmasi
+    "referral": "5460997461701050139",    # Referal tizimi tugmasi
+    "top": "5409008750893734809",         # Top reyting tugmasi
+    "settings": "4967490064234840998",    # Sozlamalar tugmasi
+    "admin": "5864197326318342099",       # Admin (Aloqa) tugmasi
 
     # 📌 ASOSIY MENYU XABARI MATNIDAGI EMOJILAR (Xabar ichida):
-    "main_title": "",                     # "Asosiy menyu" sarlavhasi yonidagi emoji
-    "main_trust": "",                     # "Biz bilan ishonchli savdo..." yonidagi emoji
-    "main_channel": "",                   # "Kanalimizni kuzatib boring..." yonidagi emoji
-    "main_hint": "",                      # "Kerakli xizmatni tanlang..." yonidagi emoji
+    "main_title": "5008248651038852115",  # "Asosiy menyu" sarlavhasi yonidagi emoji
+    "main_trust": "5460947592835778324",  # "Biz bilan ishonchli savdo..." yonidagi emoji
+    "main_channel": "5461137215641895106",# "Kanalimizni kuzatib boring..." yonidagi emoji
+    "main_hint": "5271998448042785916",   # "Kerakli xizmatni tanlang..." yonidagi emoji
 
     # 📌 QO'SHIMCHA TUGMALAR:
-    "back": "",                           # Orqaga tugmasi emojisi
-    "cancel": "",                         # Bekor qilish tugmasi emojisi
-    "check_btn": "",                      # To'lovni tekshirish tugmasi emojisi
+    "back": "5271599436991052462",        # Orqaga tugmasi emojisi
+    "cancel": "5316660455744223443",      # Bekor qilish tugmasi emojisi
+    "check_btn": "5316827280863934685",   # To'lovni tekshirish tugmasi emojisi
 }
 
 # ==============================================================================
