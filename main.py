@@ -713,7 +713,7 @@ def get_webapp_url():
                 return btn_url.rstrip("/")
     except Exception:
         pass
-    return "https://territories-estimated-stats-allocated.trycloudflare.com"
+    return "https://cams-jun-claims-thousand.trycloudflare.com"
 
 
 def sync_balance_to_webapp(user_id, balance):
