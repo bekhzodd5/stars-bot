@@ -4062,8 +4062,11 @@ async def check_telegram_username(uname_raw: str):
                 return True, f"ID: {raw}", f"ID: {raw}"
         return False, None, None
 
-    # Username formati: 4-32 ta harf, raqam va pastki chiziq
-    if len(raw) < 4 or len(raw) > 32 or not re.match(r'^[a-zA-Z0-9_]+$', raw):
+    # Telegram username qoidalari:
+    # 1. Faqat lotin harflari, raqamlar va pastki chiziq (_)
+    # 2. Harf bilan boshlanishi SHART (raqam yoki _ bilan boshlanishi mumkin emas!)
+    # 3. Uzunligi 4 dan 32 gacha
+    if not re.match(r'^[a-zA-Z][a-zA-Z0-9_]{3,31}$', raw):
         return False, None, None
 
     url = f"https://t.me/{raw}"
@@ -4074,29 +4077,37 @@ async def check_telegram_username(uname_raw: str):
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=5)) as resp:
                 if resp.status != 200:
-                    return True, f"@{raw}", f"@{raw}"
+                    return False, None, None
                 html = await resp.text()
     except Exception as e:
         logging.warning(f"Error checking username @{raw}: {e}")
         return True, f"@{raw}", f"@{raw}"
 
-    # Agar t.me sahifasida noindex bo'lsa, profil Telegramda yo'q
+    # Agar t.me sahifasida noindex bo'lsa, profil mavjud emas
     if '<meta name="robots" content="noindex, nofollow">' in html:
+        return False, None, None
+
+    # Haqiqiy Telegram profillarida tgme_page_title mavjud bo'ladi
+    m2 = re.search(r'<div class="tgme_page_title"[^>]*>(.*?)</div>', html, re.DOTALL)
+    page_title = re.sub(r'<[^>]+>', '', m2.group(1)).strip() if m2 else ""
+
+    # Agar page_title bo'sh bo'lsa, profil mavjud emas
+    if not page_title:
         return False, None, None
 
     m = re.search(r'<meta property="og:title" content="([^"]+)">', html)
     og_title = m.group(1).strip() if m else ""
 
-    # Agar og:title mavjud bo'lmasa yoki 'Telegram: Contact @...' bo'lsa, mavjud emas
-    if not og_title or og_title == f"Telegram: Contact @{raw}" or og_title.startswith("Telegram: Contact @"):
+    # Noto'g'ri / soxta / asosiy sahifa og:title larini tekshirish
+    if (
+        not og_title
+        or og_title.startswith("Telegram: Contact @")
+        or "a new era of messaging" in og_title.lower()
+        or og_title.strip() == "Telegram"
+    ):
         return False, None, None
 
-    # Profil nomini olish
-    m2 = re.search(r'<div class="tgme_page_title"[^>]*>(.*?)</div>', html, re.DOTALL)
-    page_title = re.sub(r'<[^>]+>', '', m2.group(1)).strip() if m2 else ""
-    name = page_title or og_title
-
-    return True, name, f"@{raw}"
+    return True, page_title, f"@{raw}"
 
 
 @dp.callback_query(F.data == "target_self")
