@@ -396,15 +396,40 @@ def load_data():
                             except Exception:
                                 pass
 
+            parsed_balances = {}
+            for k, v in data.get("user_balances", {}).items():
+                try:
+                    parsed_balances[str(k)] = int(v)
+                    if str(k).isdigit():
+                        parsed_balances[int(k)] = int(v)
+                except Exception:
+                    pass
+
+            parsed_stars = {}
+            for k, v in data.get("user_stars_balances", {}).items():
+                try:
+                    parsed_stars[str(k)] = float(v)
+                    if str(k).isdigit():
+                        parsed_stars[int(k)] = float(v)
+                except Exception:
+                    pass
+
+            parsed_reg = set()
+            for k in data.get("registered_users", []):
+                try:
+                    parsed_reg.add(int(k) if str(k).isdigit() else str(k))
+                except Exception:
+                    pass
+
             return {
-                "user_balances": {int(k): int(v) for k, v in data.get("user_balances", {}).items()},
-                "user_stars_balances": {int(k): float(v) for k, v in data.get("user_stars_balances", {}).items()},
-                "user_referrals": {int(k): int(v) for k, v in data.get("user_referrals", {}).items()},
-                "registered_users": set(int(k) for k in data.get("registered_users", [])),
+                "user_balances": parsed_balances,
+                "user_stars_balances": parsed_stars,
+                "user_referrals": {int(k) if str(k).isdigit() else str(k): int(v) for k, v in data.get("user_referrals", {}).items() if str(v).isdigit()},
+                "registered_users": parsed_reg,
                 "verified_phones": {str(k): str(v) for k, v in data.get("verified_phones", {}).items()},
                 "user_languages": {str(k): str(v) for k, v in data.get("user_languages", {}).items()},
                 "user_join_dates": {str(k): str(v) for k, v in data.get("user_join_dates", {}).items()},
-                "referral_pending": {str(k): int(v) for k, v in data.get("referral_pending", {}).items()},
+                "referral_pending": {str(k): int(v) for k, v in data.get("referral_pending", {}).items() if str(v).isdigit()},
                 "referral_processed": {str(k): True for k in data.get("referral_processed", [])},
                 "purchase_history": data.get("purchase_history", []),
                 "menu_emojis": data.get("menu_emojis", {}),
@@ -671,8 +696,72 @@ def build_top_text(user_id, period):
         text += f"{i}. <b>{row['name']}</b> — {money(row['total'])} so'm ({row['count']} ta)\n"
     return text + "</blockquote>"
 
+def get_webapp_url():
+    """Aktiv WebApp (server.js) havolasini aniqlash"""
+    url = os.getenv("WEBAPP_URL")
+    if url and url.startswith("http"):
+        return url.rstrip("/")
+    try:
+        req = urllib.request.Request(
+            f"https://api.telegram.org/bot{BOT_TOKEN}/getChatMenuButton",
+            headers={"User-Agent": "BotSync/1.0"}
+        )
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            btn_url = data.get("result", {}).get("web_app", {}).get("url")
+            if btn_url and btn_url.startswith("http"):
+                return btn_url.rstrip("/")
+    except Exception:
+        pass
+    return "https://territories-estimated-stats-allocated.trycloudflare.com"
+
+
+def sync_balance_to_webapp(user_id, balance):
+    """Botdagi balans o'zgarishini zudlik bilan WebApp serveriga HTTP orqali uzatish"""
+    uid_str = str(user_id)
+    payload = json.dumps({"user_id": uid_str, "balance": int(balance)}).encode("utf-8")
+    endpoints = []
+    w_url = get_webapp_url()
+    if w_url:
+        endpoints.append(f"{w_url}/api/sync-balance")
+    endpoints.append("http://127.0.0.1:3000/api/sync-balance")
+
+    for ep in endpoints:
+        try:
+            req = urllib.request.Request(
+                ep,
+                data=payload,
+                headers={"Content-Type": "application/json", "User-Agent": "BotSync/1.0"},
+                method="POST"
+            )
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                if resp.status == 200:
+                    logging.info(f"Balance synced to WebApp via {ep}: user={uid_str}, bal={balance}")
+                    break
+        except Exception as e:
+            logging.debug(f"Sync balance to {ep} failed: {e}")
+
+
 def get_balance(user_id):
     uid_str = str(user_id)
+    # 1. Avval WebApp live API dan tekshirib olish (agar ulanish bo'lsa)
+    try:
+        w_url = get_webapp_url()
+        if w_url:
+            req = urllib.request.Request(
+                f"{w_url}/api/me?tg_id={uid_str}",
+                headers={"User-Agent": "BotSync/1.0"}
+            )
+            with urllib.request.urlopen(req, timeout=2) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                if data.get("ok") and data.get("user") and "balance" in data["user"]:
+                    web_bal = int(data["user"]["balance"])
+                    user_balances[uid_str] = web_bal
+                    return web_bal
+    except Exception:
+        pass
+
+    # 2. Baza yoki xotiradan olish
     bal = user_balances.get(uid_str)
     if bal is None and isinstance(user_id, int):
         bal = user_balances.get(user_id)
@@ -694,9 +783,12 @@ def get_balance(user_id):
                 pass
     return bal if bal is not None else 0
 
+
 def update_balance(user_id, amount):
     uid_str = str(user_id)
     new_bal = get_balance(user_id) + amount
+    if new_bal < 0:
+        new_bal = 0
     user_balances[uid_str] = new_bal
     save_data()
 
@@ -724,6 +816,12 @@ def update_balance(user_id, amount):
                 json.dump(web_db, f, indent=2, ensure_ascii=False)
         except Exception as e:
             logging.error(f"Error syncing balance to web_db: {e}")
+
+    # WebApp (server.js) ga HTTP orqali zudlik bilan uzatish (Bot -> WebApp)
+    try:
+        sync_balance_to_webapp(uid_str, new_bal)
+    except Exception as e:
+        logging.error(f"sync_balance_to_webapp error: {e}")
 
 def get_stars_balance(user_id):
     return user_stars_balances.get(user_id, 0.0)
@@ -3385,6 +3483,14 @@ async def handle_webapp_order_approve(call: types.CallbackQuery):
     save_data()
 
     try:
+        sync_balance_to_webapp(user_id, new_bal)
+    except Exception:
+        pass
+
+    try:
+        w_url = get_webapp_url()
+        if w_url:
+            send_request(f"{w_url}/api/orders/approve", {"order_id": order_id})
         send_request("http://127.0.0.1:3000/api/orders/approve", {"order_id": order_id})
     except Exception:
         pass
@@ -3463,6 +3569,9 @@ async def handle_webapp_order_reject(call: types.CallbackQuery):
                 logging.error(f"Error saving database.json: {e}")
 
     try:
+        w_url = get_webapp_url()
+        if w_url:
+            send_request(f"{w_url}/api/orders/reject", {"order_id": order_id})
         send_request("http://127.0.0.1:3000/api/orders/reject", {"order_id": order_id})
     except Exception:
         pass
