@@ -1,4 +1,5 @@
 import asyncio
+import html
 import json
 import logging
 import os
@@ -29,6 +30,7 @@ if not BOT_TOKEN:
 ADMIN_ID = 7414653407
 ADMIN_USERNAME = "@rymbyvv"
 SUB_CHANNELS = ["@rymbyvv_otziv"]
+ORDER_CHANNEL = os.getenv("ORDER_CHANNEL", "@starbozor_order")
 DATA_FILE = "bot_database.json"
 
 PAYMENT_CARD = os.getenv("PAYMENT_CARD") or "9860 3566 3465 1745"
@@ -102,6 +104,39 @@ DEFAULT_MENU_EMOJIS = {
     "sell_gift_kubok": "5823653586663382347",
     "sell_gift_olmos": "5823337017508895058",
     "sell_gift_yuzuk": "5823622048718527510",
+
+    # ==========================================================================
+    # 📢 1. KANAL POSTI ASOSIY TUZILISHI PREMIUM EMOJI ID-LARI:
+    # (O'zingiz xohlagan Premium Custom Emoji ID raqamlaringizni shu yerga qo'ying):
+    # ==========================================================================
+    "post_shop": "5373052667671093676",       # 🛍 "Yangi xarid amalga oshirildi!" sarlavhasi
+    "post_product": "5854908544712707500",    # 📦 "Mahsulot:" sarlavhasi oldidagi emoji
+    "post_recipient": "5974048815789903111",  # 👤 "Qabul qiluvchi:" oldidagi emoji
+    "post_price": "5375296873982604963",      # 💰 "Narxi:" oldidagi emoji
+    "post_id": "5363858422590619939",         # 🆔 "Buyurtma ID:" oldidagi emoji
+    "post_time": "5816581755506791842",       # ⏱ "Vaqt:" oldidagi emoji
+    "post_lightning": "5460991276948143687",  # ⚡️ Pastki "STAR BOZOR" shiori oldidagi emoji
+
+    # ==========================================================================
+    # 📢 2. KANALGA CHIQADIGAN MAHSULOTLAR PREMIUM EMOJI ID-LARI:
+    # (Stars, Premium va 11 ta Sovg'a ID-larini shu qatorlarga qo'ying):
+    # ==========================================================================
+    # --- ⭐ Stars va 👑 Premium ---
+    "channel_star": "5269623953898357794",          # ⭐ Star emoji ID (Stars va Sovg'alar ichidagi yulduzcha)
+    "channel_premium": "5461082978794880873",       # 👑 Premium obuna emoji ID
+
+    # --- 🎁 11 ta Telegram Sovg'alari (Gifts) ---
+    "channel_gift_ayiqcha": "5823511762548301106",  # 🧸 Ayiqcha (15 Stars)
+    "channel_gift_yurak":   "5823504508348537997",  # 💖 Yurakcha (15 Stars)
+    "channel_gift_atirgul": "5823675916198354199",  # 🌹 Qizil Atirgul (25 Stars)
+    "channel_gift_quti":    "5825844101588720291",  # 🎁 Syurpriz quti (25 Stars)
+    "channel_gift_lola":    "5823675916198354199",  # 💐 Lola guldastasi (50 Stars)
+    "channel_gift_raketa":  "5825442788434517646",  # 🚀 Kosmik Raketa (50 Stars)
+    "channel_gift_tort":    "5825603677909424544",  # 🎂 Tug'ilgan kun torti (50 Stars)
+    "channel_gift_shampan": "5823279086990006647",  # 🍾 Shampan (50 Stars)
+    "channel_gift_kubok":   "5823653586663382347",  # 🏆 Oltin Kubok (100 Stars)
+    "channel_gift_olmos":   "5823337017508895058",  # 💎 Moviy Olmos (100 Stars)
+    "channel_gift_yuzuk":   "5823622048718527510",  # 💍 Brilliant Uzuk (100 Stars)
 }
 
 # ==============================================================================
@@ -452,6 +487,7 @@ def load_data():
                 "pending_auto_payments": data.get("pending_auto_payments", {}),
                 "sell_orders": data.get("sell_orders", {}),
                 "withdraw_requests": data.get("withdraw_requests", {}),
+                "order_channel": data.get("order_channel", ORDER_CHANNEL),
                 "payhamyon": data.get("payhamyon", {
                     "shop_id": DEFAULT_SHOP_ID,
                     "shop_key": DEFAULT_SHOP_KEY,
@@ -480,6 +516,7 @@ def load_data():
         "pending_auto_payments": {},
         "sell_orders": {},
         "withdraw_requests": {},
+        "order_channel": ORDER_CHANNEL,
         "payhamyon": {
             "shop_id": DEFAULT_SHOP_ID,
             "shop_key": DEFAULT_SHOP_KEY,
@@ -565,6 +602,7 @@ class AdminState(StatesGroup):
     waiting_for_payhamyon_shop_id = State()
     waiting_for_payhamyon_shop_key = State()
     waiting_for_payhamyon_base_url = State()
+    waiting_for_order_channel = State()
 
 
 def save_data():
@@ -586,6 +624,7 @@ def save_data():
         "pending_auto_payments": pending_auto_payments,
         "sell_orders": sell_orders,
         "withdraw_requests": withdraw_requests,
+        "order_channel": db.get("order_channel", ORDER_CHANNEL),
         "payhamyon": db.get("payhamyon", {
             "shop_id": DEFAULT_SHOP_ID,
             "shop_key": DEFAULT_SHOP_KEY,
@@ -772,9 +811,12 @@ def editable_text(key, fallback="", user_id=0):
         return str(bucket[key])
     return str(fallback)
 
-def custom_tag(key):
+def custom_tag(key, fallback=""):
     eid = menu_emojis.get(key) or DEFAULT_MENU_EMOJIS.get(key)
-    return f'<tg-emoji emoji-id="{eid}">✨</tg-emoji> ' if eid else ''
+    fb = fallback or "✨"
+    if eid:
+        return f'<tg-emoji emoji-id="{eid}">{fb}</tg-emoji> '
+    return f"{fb} " if fallback else ""
 
 def p_btn(text, cb, key, style=None):
     eid = menu_emojis.get(key) or DEFAULT_MENU_EMOJIS.get(key)
@@ -877,6 +919,188 @@ def sync_balance_to_webapp(user_id, balance):
                     break
         except Exception as e:
             logging.debug(f"Sync balance to {ep} failed: {e}")
+
+
+def get_order_channel():
+    """Avtomatik xaridlar kanali manzili yoki chat ID sini olish"""
+    ch = os.getenv("ORDER_CHANNEL") or db.get("order_channel") or "@starbozor_order"
+    try:
+        if str(ch).startswith("-100"):
+            return int(ch)
+    except Exception:
+        pass
+    return ch
+
+
+posted_order_ids = set()
+
+
+def format_channel_product(product_name, prod_key=""):
+    """
+    Kanal postidagi 'Mahsulot:' qatorini to'liq Telegram Premium Emojilar bilan formatlash.
+    Stars, 11 ta Sovg'a (Gift) va Telegram Premium obunalarini to'g'ri aniqlaydi.
+    """
+    key = str(prod_key or "").lower().strip()
+    raw = str(product_name or "").strip()
+
+    # 1. Star emoji tegi (Star va sovg'alar ichidagi yulduzcha uchun)
+    star_tag = custom_tag("channel_star", fallback="⭐").strip()
+
+    # 2. Premium obuna emoji tegi
+    prem_tag = custom_tag("channel_premium", fallback="👑").strip()
+
+    # 3. 11 ta Sovg'alar (Gifts)
+    gift_map = {
+        "ayiqcha": ("channel_gift_ayiqcha", "🧸", "Ayiqcha", 15),
+        "yurak":   ("channel_gift_yurak",   "💖", "Yurakcha", 15),
+        "atirgul": ("channel_gift_atirgul", "🌹", "Qizil Atirgul", 25),
+        "quti":    ("channel_gift_quti",    "🎁", "Syurpriz quti", 25),
+        "lola":    ("channel_gift_lola",    "💐", "Lola guldastasi", 50),
+        "raketa":  ("channel_gift_raketa",  "🚀", "Kosmik Raketa", 50),
+        "tort":    ("channel_gift_tort",    "🎂", "Tug'ilgan kun torti", 50),
+        "shampan": ("channel_gift_shampan", "🍾", "Shampan", 50),
+        "kubok":   ("channel_gift_kubok",   "🏆", "Oltin Kubok", 100),
+        "olmos":   ("channel_gift_olmos",   "💎", "Moviy Olmos", 100),
+        "yuzuk":   ("channel_gift_yuzuk",   "💍", "Brilliant Uzuk", 100),
+    }
+
+    key_to_gift = {
+        "gift_15_1": "ayiqcha",
+        "gift_15_2": "yurak",
+        "gift_25_1": "atirgul",
+        "gift_25_2": "quti",
+        "gift_50_1": "lola",
+        "gift_50_2": "raketa",
+        "gift_50_3": "tort",
+        "gift_50_4": "shampan",
+        "gift_100_1": "kubok",
+        "gift_100_2": "olmos",
+        "gift_100_3": "yuzuk",
+    }
+
+    matched_gift = None
+    if key in key_to_gift:
+        matched_gift = gift_map[key_to_gift[key]]
+    else:
+        raw_lower = raw.lower()
+        for g_k, g_v in gift_map.items():
+            if g_k in raw_lower or g_v[2].lower() in raw_lower or g_v[1] in raw:
+                matched_gift = g_v
+                break
+
+    if matched_gift:
+        cfg_key, fallback_icon, title, count = matched_gift
+        cnt_match = re.search(r"\((\d+)\s*⭐?\)", raw)
+        if cnt_match:
+            count = cnt_match.group(1)
+        g_tag = custom_tag(cfg_key, fallback=fallback_icon).strip()
+        return f"{g_tag} <b>{title}</b> ({count} {star_tag})"
+
+    # 4. Telegram Premium obunasi
+    if key.startswith("prem_") or "premium" in raw.lower():
+        title = raw
+        title = re.sub(r"<[^>]+>", "", title)
+        title = re.sub(r"\s*-\s*[\d\.\s]+so['`]?m.*$", "", title, flags=re.IGNORECASE).strip()
+        title = title.replace("⭐️", "").replace("👑", "").strip()
+        if not title:
+            title = "Telegram Premium"
+        return f"{prem_tag} <b>{title}</b>"
+
+    # 5. Stars paketi
+    stars_match = re.search(r"(\d[\d\s,]*)\s*stars", raw, re.IGNORECASE)
+    if stars_match or key.startswith("stars_") or "custom_stars" in key:
+        if stars_match:
+            cnt = stars_match.group(1).replace(" ", "").replace(",", "")
+        else:
+            cnt = key.replace("custom_stars_", "").replace("stars_", "")
+        return f"<b>{cnt}</b> {star_tag} <b>Stars</b>"
+
+    # 6. Boshqa mahsulot
+    clean_raw = re.sub(r"<[^>]+>", "", raw)
+    clean_raw = re.sub(r"\s*-\s*[\d\.\s]+so['`]?m.*$", "", clean_raw, flags=re.IGNORECASE).strip()
+    return clean_raw or raw
+
+
+async def post_order_to_channel(product_name, recipient="", price=0, order_id="", user_name="", recipient_name="", prod_key=""):
+    """Xarid amalga oshirilganda darhol avto-kanalga bildirishnoma postini yuborish"""
+    channel = get_order_channel()
+    if not channel:
+        return
+    clean_id = str(order_id or "").replace("#", "")
+    if clean_id and clean_id in posted_order_ids:
+        return
+    if clean_id:
+        posted_order_ids.add(clean_id)
+    try:
+        now_uz = datetime.utcnow() + timedelta(hours=5)
+        time_str = now_uz.strftime("%d.%m.%Y | %H:%M")
+
+        p_k = str(prod_key or "").lower()
+        if "_" in clean_id:
+            parts = clean_id.split("_")
+            suffix = parts[-1][-5:]
+        else:
+            suffix = clean_id[-5:]
+
+        if clean_id.startswith(("SB-", "ST-", "GF-", "PR-")):
+            display_id = clean_id
+        elif p_k.startswith("gift_") or "gift" in str(product_name).lower():
+            display_id = f"GF-{suffix}"
+        elif p_k.startswith("prem_") or "premium" in str(product_name).lower():
+            display_id = f"PR-{suffix}"
+        else:
+            display_id = f"ST-{suffix}"
+
+        # Qabul qiluvchi nikini (display name) aniqlash
+        rec_str = str(recipient or "").strip()
+        rec_name = str(recipient_name or "").strip()
+        clean_user = rec_str.replace("@", "").strip()
+
+        # Agar nik berilmagan bo'lsa va username mavjud bo'lsa, Telegramdan tekshirib aniqlaymiz
+        if (not rec_name or rec_name == rec_str or rec_name.startswith("@")) and clean_user and not clean_user.isdigit() and not clean_user.startswith("ID:"):
+            try:
+                ok, fetched_name, _ = await check_telegram_username(clean_user)
+                if ok and fetched_name and fetched_name != f"@{clean_user}":
+                    rec_name = fetched_name
+            except Exception:
+                pass
+
+        # Xarid qilgan odamning o'zining niki (ustiga bossa akkaunti chiqmaydigan qilib oddiy matn)
+        buyer_nick = user_name or rec_name or clean_user or "Mijoz"
+        safe_name = html.escape(buyer_nick)
+        rec_display = f"<b>{safe_name}</b>"
+
+        prod_display = format_channel_product(product_name, prod_key)
+
+        em_shop = custom_tag("post_shop", "🛍")
+        em_prod = custom_tag("post_product", "📦")
+        em_rec = custom_tag("post_recipient", "👤")
+        em_price = custom_tag("post_price", "💰")
+        em_id = custom_tag("post_id", "🆔")
+        em_time = custom_tag("post_time", "⏱")
+        em_lightning = custom_tag("post_lightning", "⚡️")
+
+        text = (
+            f"<blockquote>{em_shop}<b>Yangi xarid amalga oshirildi!</b>\n\n"
+            f"{em_prod}<b>Mahsulot:</b> {prod_display}\n"
+            f"{em_rec}<b>Qabul qiluvchi:</b> {rec_display}\n"
+            f"{em_price}<b>Narxi:</b> {money(price)} so'm\n"
+            f"{em_id}<b>Buyurtma ID:</b> <code>#{display_id}</code>\n"
+            f"{em_time}<b>Vaqt:</b> {time_str}\n\n"
+            f"{em_lightning}<i>STAR BOZOR — Ishonchli va tezkor xizmat!</i></blockquote>"
+        )
+
+        builder = InlineKeyboardBuilder()
+        builder.row(types.InlineKeyboardButton(text="🛒 Xarid qilish", url="https://t.me/star_bozor_uz_bot"))
+
+        await bot.send_message(
+            chat_id=channel,
+            text=text,
+            reply_markup=builder.as_markup()
+        )
+        logging.info(f"Kanalga (#{display_id}) xarid xabari yuborildi.")
+    except Exception as e:
+        logging.error(f"Kanalga xarid xabari yuborishda xatolik: {e}")
 
 
 def get_balance(user_id):
@@ -1192,7 +1416,10 @@ def get_admin_panel_keyboard():
         p_btn("Balans Qo'shish", "admin_add_bal", "deposit"),
         p_btn("Balans Ayirish", "admin_sub_bal", "sell")
     )
-    builder.row(p_btn("⚡️ PayHamyon Kassa", "admin_payhamyon", "deposit"))
+    builder.row(
+        p_btn("⚡️ PayHamyon Kassa", "admin_payhamyon", "deposit"),
+        p_btn("📢 Buyurtmalar Kanali", "admin_order_channel", "channel_btn")
+    )
     builder.row(p_btn("Narxlarni boshqarish", "admin_prices", "custom_stars"))
     builder.row(p_btn("Premium Emoji boshqarish", "admin_emojis", "premium"))
     builder.row(p_btn("Textlarni o'zgartirish", "admin_texts", "settings"))
@@ -1418,6 +1645,86 @@ async def process_payhamyon_base_url(message: types.Message, state: FSMContext):
 
 
 # ==============================================================================
+# ADMIN PANEL: AVTO BUYURTMALAR KANALI BOSHQARUVI
+# ==============================================================================
+@dp.callback_query(F.data == "admin_order_channel")
+async def admin_order_channel_menu(callback: types.CallbackQuery, state: FSMContext):
+    if callback.from_user.id != ADMIN_ID:
+        return
+    await state.clear()
+    ch = get_order_channel()
+    text = (
+        f"<blockquote>📢 <b>Avtomatik Xaridlar Kanali Sozlamalari</b>\n\n"
+        f"Hozirgi kanal: <b>{ch}</b>\n"
+        f"Holati: <b>Ulangan va Faol ✅</b>\n\n"
+        f"Foydalanuvchi Stars, Gift yoki Premium xarid qilganda, ushbu kanalga avtomatik ravishda chiroyli xarid cheki e'lon qilinadi.</blockquote>"
+    )
+    b = InlineKeyboardBuilder()
+    b.row(p_btn("🧪 Test xabar yuborish", "admin_test_order_ch", "check_btn"))
+    b.row(p_btn("✏️ Kanalni o'zgartirish", "admin_set_order_ch", "settings"))
+    b.row(p_btn("Admin Panel", "admin_panel", "back"))
+
+    await callback.message.edit_text(text, reply_markup=b.as_markup())
+    await callback.answer()
+
+
+@dp.callback_query(F.data == "admin_test_order_ch")
+async def admin_test_order_channel(callback: types.CallbackQuery):
+    if callback.from_user.id != ADMIN_ID:
+        return
+    await callback.answer("⏳ Test xabar yuborilmoqda...")
+    try:
+        await post_order_to_channel(
+            product_name="100 Stars",
+            recipient="@rymbyvv",
+            recipient_name=callback.from_user.full_name or "b.",
+            price=22500,
+            order_id=f"ST_{int(datetime.now().timestamp())}",
+            user_name="Admin",
+            prod_key="stars_100"
+        )
+        await callback.answer("✅ Test xarid xabari kanalga muvaffaqiyatli yuborildi!", show_alert=True)
+    except Exception as e:
+        await callback.answer(f"❌ Xatolik yuz berdi: {e}", show_alert=True)
+
+
+@dp.callback_query(F.data == "admin_set_order_ch")
+async def admin_set_order_channel(callback: types.CallbackQuery, state: FSMContext):
+    if callback.from_user.id != ADMIN_ID:
+        return
+    await state.set_state(AdminState.waiting_for_order_channel)
+    b = InlineKeyboardBuilder()
+    b.row(p_btn("Bekor qilish", "admin_order_channel", "cancel"))
+    await callback.message.edit_text(
+        "<blockquote>📢 <b>Yangi kanal manzilini kiriting:</b>\n\n"
+        "Masalan: <code>@starbozor_order</code> yoki kanal ID raqami (<code>-1004434901362</code>)\n\n"
+        "<i>Eslatma: Bot ushbu kanalda admin bo'lishi va xabar yuborish huquqiga ega bo'lishi shart!</i></blockquote>",
+        reply_markup=b.as_markup()
+    )
+    await callback.answer()
+
+
+@dp.message(AdminState.waiting_for_order_channel)
+async def admin_save_order_channel(message: types.Message, state: FSMContext):
+    if message.from_user.id != ADMIN_ID:
+        return
+    new_ch = (message.text or "").strip()
+    if not new_ch:
+        await message.answer("❌ Kanal manzili bo'sh bo'lishi mumkin emas!")
+        return
+    db["order_channel"] = new_ch
+    save_data()
+    await state.clear()
+    b = InlineKeyboardBuilder()
+    b.row(p_btn("📢 Kanal sozlamalari", "admin_order_channel", "channel_btn"))
+    b.row(p_btn("Admin Panel", "admin_panel", "back"))
+    await message.answer(
+        f"<blockquote>✅ <b>Xaridlar kanali muvaffaqiyatli saqlandi!</b>\n\nYangi kanal: <b>{new_ch}</b></blockquote>",
+        reply_markup=b.as_markup()
+    )
+
+
+# ==============================================================================
 # ADMIN PANEL: PREMIUM EMOJILAR BOSHQARUVI
 # ==============================================================================
 EMOJI_CATEGORIES = {
@@ -1425,7 +1732,8 @@ EMOJI_CATEGORIES = {
     "cat_prem": "💎 Premium bo'limi",
     "cat_gifts": "🎁 Giftlar bo'limi",
     "cat_top": "🏆 Reyting & Sozlamalar",
-    "cat_actions": "⚙️ Boshqa tugmalar"
+    "cat_actions": "⚙️ Boshqa tugmalar",
+    "cat_channel": "📢 Kanal posti emojilari"
 }
 
 CATEGORY_ITEMS = {
@@ -1492,6 +1800,15 @@ CATEGORY_ITEMS = {
         ("payment_done", "To'lovni amalga oshirdim"),
         ("cancel", "Bekor qilish tugmasi"),
         ("confirm_buy", "Xaridni tasdiqlash"),
+    ],
+    "cat_channel": [
+        ("post_shop", "🛍 Yangi xarid (Sarlavha)"),
+        ("post_product", "📦 Mahsulot"),
+        ("post_recipient", "👤 Qabul qiluvchi"),
+        ("post_price", "💰 Narxi"),
+        ("post_id", "🆔 Buyurtma ID"),
+        ("post_time", "⏱ Vaqt"),
+        ("post_lightning", "⚡️ STAR BOZOR shiori"),
     ]
 }
 
@@ -4513,6 +4830,7 @@ async def execute_purchase(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     product = data.get("product")
     target = data.get("target")
+    target_name = data.get("target_name") or callback.from_user.full_name
     target_display = data.get("target_display") or target
     prod_key = data.get("prod_key", "")
 
@@ -4537,11 +4855,27 @@ async def execute_purchase(callback: types.CallbackQuery, state: FSMContext):
         "username": callback.from_user.username or "yoq",
         "product_name": product["name"],
         "product_formatted": product["formatted"],
+        "prod_key": prod_key,
         "price": price,
         "target": target,
+        "target_name": target_name,
         "target_display": target_display
     }
     save_data()
+
+    # Avtomatik xaridlar kanaliga darhol xarid chekini joylash (foydalanuvchi niki bilan)
+    try:
+        await post_order_to_channel(
+            product_name=product.get("formatted") or product.get("name"),
+            recipient=target,
+            recipient_name=target_name,
+            price=price,
+            order_id=order_id,
+            user_name=callback.from_user.full_name,
+            prod_key=prod_key
+        )
+    except Exception as e:
+        logging.error(f"Avto kanalga post yuborishda xatolik: {e}")
 
     prod_name = product.get("name", "").lower()
     is_admin_premium = prod_key in ["prem_1", "prem_12"] or "kirib" in prod_name or "1 oylik" in prod_name
@@ -4648,6 +4982,20 @@ async def admin_order_done(callback: types.CallbackQuery):
     except Exception:
         pass
 
+    # Kanalga bildirishnoma postini yuborish (agar hali yuborilmagan bo'lsa)
+    try:
+        await post_order_to_channel(
+            product_name=order_info.get("product_formatted") or order_info.get("product_name"),
+            prod_key=order_info.get("prod_key", ""),
+            recipient=order_info.get("target", ""),
+            recipient_name=order_info.get("target_name") or order_info.get("user_name", ""),
+            price=order_info.get("price", 0),
+            order_id=order_id,
+            user_name=order_info.get("user_name", "")
+        )
+    except Exception as e:
+        logging.error(f"admin_order_done kanalga xabar yuborishda xatolik: {e}")
+
     await callback.answer("✅ Buyurtma tasdiqlandi!")
 
 
@@ -4741,6 +5089,36 @@ async def payhamyon_webhook_handler(request):
     except Exception as e:
         logging.error(f"Webhook error: {e}")
         return web.json_response({"success": False, "error": str(e)}, status=500)
+
+
+@dp.message(F.web_app_data)
+async def handle_web_app_data(message: types.Message):
+    try:
+        raw_data = message.web_app_data.data
+        data = json.loads(raw_data)
+        order_id = data.get("id") or str(int(datetime.now().timestamp()))
+        prod_name = data.get("name") or (f"{data.get('stars')} Stars" if data.get("stars") else "Mahsulot")
+        rec = data.get("recipient") or f"@{message.from_user.username or message.from_user.id}"
+        amount = int(data.get("amount") or 0)
+
+        await message.answer(
+            f"<blockquote>✅ <b>Xarid muvaffaqiyatli yakunlandi!</b>\n\n"
+            f"🆔 Buyurtma ID: <code>#{order_id}</code>\n"
+            f"📦 Mahsulot: <b>{prod_name}</b>\n"
+            f"👤 Qabul qiluvchi: <b>{rec}</b>\n"
+            f"💰 To'lov: <b>{money(amount)} so'm</b>\n\n"
+            f"<i>Xaridingiz uchun rahmat!</i></blockquote>",
+            reply_markup=back_main_keyboard(message.from_user.id)
+        )
+        await post_order_to_channel(
+            product_name=prod_name,
+            recipient=rec,
+            price=amount,
+            order_id=order_id,
+            user_name=message.from_user.full_name
+        )
+    except Exception as e:
+        logging.error(f"web_app_data xatolik: {e}")
 
 
 async def start_web_server():
