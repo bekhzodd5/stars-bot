@@ -62,6 +62,20 @@ DEFAULT_MENU_EMOJIS = {
     "cancel": "5316660455744223443",      # Bekor qilish tugmasi emojisi
     "check_btn": "5316827280863934685",   # To'lovni tekshirish tugmasi emojisi
     "sent_btn": "5316827280863934685",    # Sovg'a yubordim / Tashladim tugmasi emojisi
+    "refresh": "5460997461701050139",     # Yangilash tugmasi
+    "custom_stars": "5334673106202010226",# Boshqa miqdorda Stars
+    "channel_btn": "5461137215641895106", # Kanalga obuna bo'lish
+    "payment_done": "5316827280863934685",# To'lovni amalga oshirdim
+    "confirm_buy": "5316827280863934685", # Xaridni tasdiqlash
+
+    # 🏆 REYTING VA SOZLAMALAR:
+    "lang_uz": "5350786483466834215",     # Til: O'zbekcha
+    "lang_ru": "5460903754104604991",     # Til: Русский
+    "top_today": "5280769763398671636",   # Top: Bugun
+    "top_week": "5280769763398671636",    # Top: Hafta
+    "top_month": "5280769763398671636",   # Top: Oy
+    "profile": "5316827280863934685",     # O'zimning profilimga
+    "target_other": "5334673106202010226",# Boshqa profilga
 
     # 🎁 SOVG'ALARNING ALOHIDA PREMIUM EMOJI ID-LARI:
     "gift_15_1": "5823511762548301106",   # Ayiqcha (Teddy Bear)
