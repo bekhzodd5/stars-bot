@@ -1,4 +1,4 @@
-import asyncio
+\import asyncio
 import json
 import logging
 import os
@@ -649,17 +649,27 @@ def custom_tag(key):
     eid = menu_emojis.get(key) or DEFAULT_MENU_EMOJIS.get(key)
     return f'<tg-emoji emoji-id="{eid}">✨</tg-emoji> ' if eid else ''
 
-def p_btn(text, cb, key):
+def p_btn(text, cb, key, style=None):
     eid = menu_emojis.get(key) or DEFAULT_MENU_EMOJIS.get(key)
     if not eid and str(key).startswith("gift_"):
         eid = menu_emojis.get("gift") or DEFAULT_MENU_EMOJIS.get("gift")
     if not eid and str(key).startswith("sell_gift_"):
         eid = menu_emojis.get("sell") or DEFAULT_MENU_EMOJIS.get("sell")
-    return types.InlineKeyboardButton(text=text, callback_data=cb, icon_custom_emoji_id=eid if eid else None)
+    kwargs = {"text": text, "callback_data": cb}
+    if eid:
+        kwargs["icon_custom_emoji_id"] = eid
+    if style:
+        kwargs["style"] = style
+    return types.InlineKeyboardButton(**kwargs)
 
-def p_url_btn(text, url, key):
+def p_url_btn(text, url, key, style=None):
     eid = menu_emojis.get(key) or DEFAULT_MENU_EMOJIS.get(key)
-    return types.InlineKeyboardButton(text=text, url=url, icon_custom_emoji_id=eid if eid else None)
+    kwargs = {"text": text, "url": url}
+    if eid:
+        kwargs["icon_custom_emoji_id"] = eid
+    if style:
+        kwargs["style"] = style
+    return types.InlineKeyboardButton(**kwargs)
 
 def phone_allowed(phone):
     digits = re.sub(r"\D", "", phone or "")
@@ -981,14 +991,26 @@ def price_group_keyboard():
 def get_main_inline_menu(user_id=None):
     uid = user_id or 0
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn(tr(uid, "deposit"), "deposit", "deposit"))
-    builder.row(p_btn(tr(uid, "stars"), "buy_stars", "stars"), p_btn(tr(uid, "gift"), "buy_gift", "gift"))
-    builder.row(p_btn(tr(uid, "premium"), "buy_premium", "premium"), p_btn(tr(uid, "balance"), "my_balance", "balance"))
-    builder.row(p_btn(tr(uid, "sell"), "sell_gift_menu", "sell"), p_btn(tr(uid, "referral"), "referral_system", "referral"))
-    builder.row(p_btn(tr(uid, "top"), "top_rating", "top"), p_btn(tr(uid, "settings_btn"), "settings", "settings"))
-    builder.row(p_url_btn(tr(uid, "admin"), f"https://t.me/{ADMIN_USERNAME.replace('@','')}", "admin"))
+    builder.row(p_btn(tr(uid, "deposit"), "deposit", "deposit", style="success"))
+    builder.row(
+        p_btn(tr(uid, "stars"), "buy_stars", "stars", style="success"),
+        p_btn(tr(uid, "gift"), "buy_gift", "gift", style="success")
+    )
+    builder.row(
+        p_btn(tr(uid, "premium"), "buy_premium", "premium", style="primary"),
+        p_btn(tr(uid, "balance"), "my_balance", "balance", style="primary")
+    )
+    builder.row(
+        p_btn(tr(uid, "sell"), "sell_gift_menu", "sell", style="success"),
+        p_btn(tr(uid, "referral"), "referral_system", "referral", style="success")
+    )
+    builder.row(
+        p_btn(tr(uid, "top"), "top_rating", "top", style="primary"),
+        p_btn(tr(uid, "settings_btn"), "settings", "settings", style="primary")
+    )
+    builder.row(p_url_btn(tr(uid, "admin"), f"https://t.me/{ADMIN_USERNAME.replace('@','')}", "admin", style="success"))
     if uid == ADMIN_ID:
-        builder.row(p_btn("⚡️ Admin Panel", "admin_panel", "settings"))
+        builder.row(p_btn("⚡️ Admin Panel", "admin_panel", "settings", style="primary"))
     return builder.as_markup()
 
 def get_bottom_reply_keyboard(user_id=0):
