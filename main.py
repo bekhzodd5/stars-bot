@@ -3643,8 +3643,7 @@ async def premium_auto_menu(callback: types.CallbackQuery):
     auto_items = [
         ("prem_3", "primary"),
         ("prem_6", "success"),
-        ("prem_12_gift", "success"),
-        ("prem_12", "primary")
+        ("prem_12_gift", "primary")
     ]
     for key, b_style in auto_items:
         if key in PREMIUM_PRICES:
@@ -3673,7 +3672,9 @@ async def premium_admin_menu(callback: types.CallbackQuery):
     builder.row(p_btn("Orqaga", "buy_premium", "back"))
 
     await callback.message.edit_text(
-        f"<blockquote>{custom_tag('premium')}<b>Admin orqali Premium</b>\n\nPaketni tanlang.</blockquote>",
+        f"<blockquote>{custom_tag('premium')}<b>Admin orqali Premium</b>\n\n"
+        f"Ushbu obunalar akkauntingizga kirib faollashtirib beriladi.\n\n"
+        f"Paketni tanlang:</blockquote>",
         reply_markup=builder.as_markup()
     )
     await callback.answer()
@@ -3767,6 +3768,11 @@ async def confirm_purchase_menu(callback: types.CallbackQuery, state: FSMContext
         await callback.answer("❌ Ma'lumot topilmadi.", show_alert=True)
         return
 
+    prod_key = data.get("prod_key", "")
+    prod_name = product.get("name", "").lower()
+    is_admin_premium = prod_key in ["prem_1", "prem_12"] or "kirib" in prod_name or "1 oylik" in prod_name
+    admin_note = "\n\nℹ️ <i>To'lov balansingizdan yechilgach, akkauntga kirib berish uchun adminga bog'lanasiz.</i>" if is_admin_premium else ""
+
     builder = InlineKeyboardBuilder()
     builder.row(p_btn("Xaridni tasdiqlash", "confirm_buy", "confirm_buy", style="success"))
     builder.row(p_btn("Bekor qilish", "cancel", "cancel", style="danger"))
@@ -3775,7 +3781,7 @@ async def confirm_purchase_menu(callback: types.CallbackQuery, state: FSMContext
         f"<blockquote><b>Xaridni tasdiqlang:</b>\n\n"
         f"<b>Mahsulot:</b> {product['formatted']}\n"
         f"<b>Narxi:</b> {money(product['price'])} so'm\n"
-        f"<b>Qabul qiluvchi:</b> {target}</blockquote>"
+        f"<b>Qabul qiluvchi:</b> {target}{admin_note}</blockquote>"
     )
     await callback.message.edit_text(text, reply_markup=builder.as_markup())
     await callback.answer()
@@ -3791,6 +3797,11 @@ async def confirm_purchase_menu_msg(message: types.Message, state: FSMContext):
         await message.answer("❌ Ma'lumot topilmadi.", reply_markup=back_main_keyboard(message.from_user.id))
         return
 
+    prod_key = data.get("prod_key", "")
+    prod_name = product.get("name", "").lower()
+    is_admin_premium = prod_key in ["prem_1", "prem_12"] or "kirib" in prod_name or "1 oylik" in prod_name
+    admin_note = "\n\nℹ️ <i>To'lov balansingizdan yechilgach, akkauntga kirib berish uchun adminga bog'lanasiz.</i>" if is_admin_premium else ""
+
     builder = InlineKeyboardBuilder()
     builder.row(p_btn("Xaridni tasdiqlash", "confirm_buy", "confirm_buy", style="success"))
     builder.row(p_btn("Bekor qilish", "cancel", "cancel", style="danger"))
@@ -3799,7 +3810,7 @@ async def confirm_purchase_menu_msg(message: types.Message, state: FSMContext):
         f"<blockquote><b>Xaridni tasdiqlang:</b>\n\n"
         f"<b>Mahsulot:</b> {product['formatted']}\n"
         f"<b>Narxi:</b> {money(product['price'])} so'm\n"
-        f"<b>Qabul qiluvchi:</b> {target}</blockquote>"
+        f"<b>Qabul qiluvchi:</b> {target}{admin_note}</blockquote>"
     )
     await delete_previous_menu(message.from_user.id)
     msg = await message.answer(text, reply_markup=builder.as_markup())
@@ -3812,6 +3823,7 @@ async def execute_purchase(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     product = data.get("product")
     target = data.get("target")
+    prod_key = data.get("prod_key", "")
 
     if not product or not target:
         await callback.answer("❌ Xatolik yuz berdi. Qaytadan urinib ko'ring!", show_alert=True)
@@ -3837,13 +3849,32 @@ async def execute_purchase(callback: types.CallbackQuery, state: FSMContext):
     }
     save_data()
 
-    await callback.message.edit_text(
-        f"<blockquote>{custom_tag('stars')}<b>Buyurtmangiz qabul qilindi!</b>\n\n"
-        f"<b>Mahsulot:</b> {product['formatted']}\n"
-        f"<b>Qabul qiluvchi:</b> {target}\n\n"
-        "Tez orada buyurtmangiz bajariladi. Rahmat!</blockquote>",
-        reply_markup=back_main_keyboard(user_id)
-    )
+    prod_name = product.get("name", "").lower()
+    is_admin_premium = prod_key in ["prem_1", "prem_12"] or "kirib" in prod_name or "1 oylik" in prod_name
+
+    if is_admin_premium:
+        user_builder = InlineKeyboardBuilder()
+        user_builder.row(p_url_btn("🧑‍💻 Adminga yozish", f"https://t.me/{ADMIN_USERNAME.replace('@','')}", "admin", style="success"))
+        user_builder.row(p_btn("🏠 Asosiy menyu", "back_main", "back"))
+
+        user_text = (
+            f"<blockquote>{custom_tag('premium')}✅ <b>To'lov muvaffaqiyatli amalga oshirildi!</b>\n\n"
+            f"<b>Mahsulot:</b> {product['formatted']}\n"
+            f"<b>To'langan summa:</b> {money(price)} so'm (Balansdan yechildi)\n"
+            f"<b>Buyurtma ID:</b> <code>#{order_id}</code>\n"
+            f"<b>Qabul qiluvchi:</b> {target}\n\n"
+            f"⚡️ Ushbu Premium obunasi <b>Admin orqali</b> akkauntingizga kirib faollashtirib beriladi.\n\n"
+            f"Iltimos, pastdagi <b>🧑‍💻 Adminga yozish</b> tugmasini bosing va adminga (<code>#{order_id}</code>) raqamingizni yuboring!</blockquote>"
+        )
+        await callback.message.edit_text(user_text, reply_markup=user_builder.as_markup())
+    else:
+        await callback.message.edit_text(
+            f"<blockquote>{custom_tag('stars')}<b>Buyurtmangiz qabul qilindi!</b>\n\n"
+            f"<b>Mahsulot:</b> {product['formatted']}\n"
+            f"<b>Qabul qiluvchi:</b> {target}\n\n"
+            "Tez orada buyurtmangiz bajariladi. Rahmat!</blockquote>",
+            reply_markup=back_main_keyboard(user_id)
+        )
 
     admin_builder = InlineKeyboardBuilder()
     admin_builder.row(
@@ -3851,14 +3882,26 @@ async def execute_purchase(callback: types.CallbackQuery, state: FSMContext):
         p_btn("Bekor qilish", f"ord_cancel_{order_id}", "cancel", style="danger")
     )
 
-    admin_text = (
-        f"<blockquote><b>Yangi buyurtma!</b>\n\n"
-        f"Xaridor: {callback.from_user.full_name} (@{callback.from_user.username or 'yoq'})\n"
-        f"ID: <code>{user_id}</code>\n"
-        f"Mahsulot: {product['name']}\n"
-        f"Narxi: {money(price)} so'm\n"
-        f"Qabul qiluvchi: {target}</blockquote>"
-    )
+    if is_admin_premium:
+        admin_text = (
+            f"<blockquote>👑 <b>Yangi Admin Premium Buyurtmasi!</b>\n\n"
+            f"Xaridor: <a href='tg://user?id={user_id}'>{callback.from_user.full_name}</a> (@{callback.from_user.username or 'yoq'})\n"
+            f"ID: <code>{user_id}</code>\n"
+            f"Mahsulot: <b>{product['name']}</b>\n"
+            f"To'lov: <b>{money(price)} so'm</b> (Balansdan yechildi ✅)\n"
+            f"Buyurtma ID: <code>#{order_id}</code>\n"
+            f"Qabul qiluvchi: <code>{target}</code>\n\n"
+            f"⚠️ <b>DIQQAT:</b> Mijoz akkauntiga kirib Premium faollashtirishingiz uchun sizga yozadi!</blockquote>"
+        )
+    else:
+        admin_text = (
+            f"<blockquote><b>Yangi buyurtma!</b>\n\n"
+            f"Xaridor: {callback.from_user.full_name} (@{callback.from_user.username or 'yoq'})\n"
+            f"ID: <code>{user_id}</code>\n"
+            f"Mahsulot: {product['name']}\n"
+            f"Narxi: {money(price)} so'm\n"
+            f"Qabul qiluvchi: {target}</blockquote>"
+        )
 
     await bot.send_message(chat_id=ADMIN_ID, text=admin_text, reply_markup=admin_builder.as_markup())
     await callback.answer("✅ Buyurtma qabul qilindi!")
