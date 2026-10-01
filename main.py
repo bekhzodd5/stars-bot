@@ -2290,7 +2290,7 @@ async def show_balance(callback: types.CallbackQuery):
         f"Referal Stars: <b>{format_stars(stars_bal)} Stars</b></blockquote>"
     )
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn(tr(uid, "deposit"), "deposit", "deposit"))
+    builder.row(p_btn(tr(uid, "deposit"), "deposit", "deposit", style="success"))
     builder.row(p_btn(tr(uid, "back"), "back_main", "back"))
     await callback.message.edit_text(text, reply_markup=builder.as_markup())
     await callback.answer()
@@ -2316,7 +2316,7 @@ async def referral_system_handler(callback: types.CallbackQuery):
 
     builder = InlineKeyboardBuilder()
     if stars >= 15:
-        builder.row(p_btn(tr(user_id, "withdraw"), "withdraw_stars", "stars"))
+        builder.row(p_btn(tr(user_id, "withdraw"), "withdraw_stars", "stars", style="success"))
     builder.row(p_btn(tr(user_id, "back"), "back_main", "back"))
 
     await callback.message.edit_text(
@@ -2381,8 +2381,8 @@ async def process_withdraw_stars(message: types.Message, state: FSMContext):
 
     admin_builder = InlineKeyboardBuilder()
     admin_builder.row(
-        p_btn("Tasdiqlash (Bajarildi)", f"wd_done_{withdraw_id}", "check_btn"),
-        p_btn("Rad etish (Qaytarish)", f"wd_cancel_{withdraw_id}", "cancel")
+        p_btn("Tasdiqlash (Bajarildi)", f"wd_done_{withdraw_id}", "check_btn", style="success"),
+        p_btn("Rad etish (Qaytarish)", f"wd_cancel_{withdraw_id}", "cancel", style="danger")
     )
 
     admin_text = (
@@ -2576,8 +2576,8 @@ async def process_deposit_amount(message: types.Message, state: FSMContext):
     )
 
     b = InlineKeyboardBuilder()
-    b.row(p_btn("🔄 To'lovni tekshirish", f"check_auto_{token}", "check_btn"))
-    b.row(p_btn("❌ Bekor qilish", f"cancel_auto_{token}", "cancel"))
+    b.row(p_btn("🔄 To'lovni tekshirish", f"check_auto_{token}", "check_btn", style="success"))
+    b.row(p_btn("❌ Bekor qilish", f"cancel_auto_{token}", "cancel", style="danger"))
 
     await status_msg.edit_text(auto_card_text, reply_markup=b.as_markup())
     last_menu_messages[user_id] = status_msg.message_id
@@ -2644,8 +2644,8 @@ async def start_auto_payment(callback: types.CallbackQuery, state: FSMContext):
     )
 
     b = InlineKeyboardBuilder()
-    b.row(p_btn("🔄 To'lovni tekshirish", f"check_auto_{token}", "check_btn"))
-    b.row(p_btn("❌ Bekor qilish", f"cancel_auto_{token}", "cancel"))
+    b.row(p_btn("🔄 To'lovni tekshirish", f"check_auto_{token}", "check_btn", style="success"))
+    b.row(p_btn("❌ Bekor qilish", f"cancel_auto_{token}", "cancel", style="danger"))
 
     await callback.message.edit_text(auto_card_text, reply_markup=b.as_markup())
     await callback.answer()
@@ -2785,8 +2785,8 @@ async def start_manual_payment(callback: types.CallbackQuery, state: FSMContext)
     )
 
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn(editable_text("payment_done_button", "To'lovni amalga oshirdim", user_id), f"send_pay_{payment_id}", "payment_done"))
-    builder.row(p_btn(editable_text("payment_cancel_button", "Bekor qilish", user_id), "cancel", "cancel"))
+    builder.row(p_btn(editable_text("payment_done_button", "To'lovni amalga oshirdim", user_id), f"send_pay_{payment_id}", "payment_done", style="success"))
+    builder.row(p_btn(editable_text("payment_cancel_button", "Bekor qilish", user_id), "cancel", "cancel", style="danger"))
 
     await callback.message.edit_text(card_text, reply_markup=builder.as_markup())
 
@@ -2873,8 +2873,8 @@ async def process_deposit_receipt(message: types.Message, state: FSMContext):
 
     admin_builder = InlineKeyboardBuilder()
     admin_builder.row(
-        p_btn("Tasdiqlash", f"approve_pay_{payment_id}", "check_btn"),
-        p_btn("Rad etish", f"reject_pay_{payment_id}", "cancel")
+        p_btn("Tasdiqlash", f"approve_pay_{payment_id}", "check_btn", style="success"),
+        p_btn("Rad etish", f"reject_pay_{payment_id}", "cancel", style="danger")
     )
 
     admin_text = (
@@ -2988,10 +2988,11 @@ async def reject_payment(callback: types.CallbackQuery):
 async def stars_menu(callback: types.CallbackQuery):
     uid = callback.from_user.id
     builder = InlineKeyboardBuilder()
-    for key, data in STARS_PRICES.items():
-        builder.add(p_btn(data["name"], f"buyprod_{key}", "stars"))
+    for idx, (key, data) in enumerate(STARS_PRICES.items()):
+        btn_style = "success" if ((idx // 2 + idx % 2) % 2 == 0) else "primary"
+        builder.add(p_btn(data["name"], f"buyprod_{key}", "stars", style=btn_style))
     builder.adjust(2)
-    builder.row(p_btn("Boshqa miqdorda Stars", "custom_stars", "custom_stars"))
+    builder.row(p_btn("Boshqa miqdorda Stars", "custom_stars", "custom_stars", style="success"))
     builder.row(p_btn(tr(uid, "back"), "back_main", "back"))
 
     await callback.message.edit_text(
@@ -3051,8 +3052,8 @@ async def process_custom_stars_amount(message: types.Message, state: FSMContext)
     await state.update_data(prod_key=f"custom_stars_{count}", product=product)
 
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn("O'zimning profilimga", "target_self", "profile"))
-    builder.row(p_btn("Boshqa profilga", "target_other", "target_other"))
+    builder.row(p_btn("O'zimning profilimga", "target_self", "profile", style="success"))
+    builder.row(p_btn("Boshqa profilga", "target_other", "target_other", style="primary"))
     builder.row(p_btn(tr(user_id, "back"), "buy_stars", "back"))
 
     if get_balance(user_id) < total_price:
@@ -3063,7 +3064,7 @@ async def process_custom_stars_amount(message: types.Message, state: FSMContext)
             "⚠️ <b>Hisobingizda mablag' yetarli emas.</b>\nAvval hisobingizni to'ldiring.</blockquote>"
         )
         builder = InlineKeyboardBuilder()
-        builder.row(p_btn(tr(user_id, "deposit"), "deposit", "deposit"))
+        builder.row(p_btn(tr(user_id, "deposit"), "deposit", "deposit", style="success"))
         builder.row(p_btn(tr(user_id, "back"), "buy_stars", "back"))
         await state.clear()
     else:
@@ -3082,8 +3083,9 @@ async def process_custom_stars_amount(message: types.Message, state: FSMContext)
 async def gift_menu(callback: types.CallbackQuery):
     uid = callback.from_user.id
     builder = InlineKeyboardBuilder()
-    for key, data in GIFT_PRICES.items():
-        builder.add(p_btn(data["name"], f"buyprod_{key}", key))
+    for idx, (key, data) in enumerate(GIFT_PRICES.items()):
+        btn_style = "success" if ((idx // 2 + idx % 2) % 2 == 0) else "primary"
+        builder.add(p_btn(data["name"], f"buyprod_{key}", key, style=btn_style))
     builder.adjust(2)
     builder.row(p_btn(tr(uid, "back"), "back_main", "back"))
 
@@ -3139,14 +3141,15 @@ async def sell_gift_start(callback: types.CallbackQuery):
         "sell_gift_tort", "sell_gift_shampan",
         "sell_gift_kubok", "sell_gift_olmos", "sell_gift_yuzuk"
     ]
-    for key in active_keys:
+    for idx, key in enumerate(active_keys):
         name = SELL_GIFT_INFO.get(key, key)
         p = prices['sell_gifts'].get(key)
         if p is None:
             alias = SELL_GIFT_ALIAS.get(key)
             p = prices['sell_gifts'].get(alias, 0) if alias else 0
+        btn_style = "success" if ((idx // 2 + idx % 2) % 2 == 0) else "primary"
         builder.add(
-            p_btn(f"{name} — {money(p)} so'm", key, key)
+            p_btn(f"{name} — {money(p)} so'm", key, key, style=btn_style)
         )
     builder.adjust(2)
     builder.row(p_btn(tr(uid, "back"), "back_main", "back"))
@@ -3176,8 +3179,8 @@ async def process_gift_choice(call: types.CallbackQuery, state: FSMContext):
     await state.update_data(gift_key=key, gift_name=gift_name, price_str=price_str, price_val=price_val)
 
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn("💳 Plastik kartaga", "sell_payout_card", "deposit"))
-    builder.row(p_btn("👛 Bot hisobiga (Balansga)", "sell_payout_balance", "balance"))
+    builder.row(p_btn("💳 Plastik kartaga", "sell_payout_card", "deposit", style="success"))
+    builder.row(p_btn("👛 Bot hisobiga (Balansga)", "sell_payout_balance", "balance", style="primary"))
     builder.row(p_btn(tr(call.from_user.id, "back"), "sell_gift_menu", "back"))
 
     text = (
@@ -3198,8 +3201,8 @@ async def process_payout_balance(call: types.CallbackQuery, state: FSMContext):
     await state.update_data(payout_type="balance", card=None)
 
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn("✅ Tashladim", "sell_confirm_sent", "sent_btn"))
-    builder.row(p_btn(tr(call.from_user.id, "cancel"), "back_main", "cancel"))
+    builder.row(p_btn("✅ Tashladim", "sell_confirm_sent", "sent_btn", style="success"))
+    builder.row(p_btn(tr(call.from_user.id, "cancel"), "back_main", "cancel", style="danger"))
 
     text = (
         f"<blockquote>{custom_tag('sell')}<b>Gift sotish (Bot hisobiga)</b>\n\n"
@@ -3246,8 +3249,8 @@ async def process_sell_card_number(message: types.Message, state: FSMContext):
     await safe_delete(message)
 
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn("✅ Tashladim", "sell_confirm_sent", "sent_btn"))
-    builder.row(p_btn(tr(message.from_user.id, "cancel"), "back_main", "cancel"))
+    builder.row(p_btn("✅ Tashladim", "sell_confirm_sent", "sent_btn", style="success"))
+    builder.row(p_btn(tr(message.from_user.id, "cancel"), "back_main", "cancel", style="danger"))
 
     text = (
         f"<blockquote>{custom_tag('sell')}<b>Gift sotish (Plastik kartaga)</b>\n\n"
@@ -3623,8 +3626,8 @@ async def handle_webapp_order_reject(call: types.CallbackQuery):
 async def premium_menu(callback: types.CallbackQuery):
     uid = callback.from_user.id
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn("Profilga kirmasdan (Avto)", "prem_auto_menu", "prem_auto"))
-    builder.row(p_btn("Profilga kirib (Admin orqali)", "prem_admin_menu", "prem_admin"))
+    builder.row(p_btn("Profilga kirmasdan (Avto)", "prem_auto_menu", "prem_auto", style="success"))
+    builder.row(p_btn("Profilga kirib (Admin orqali)", "prem_admin_menu", "prem_admin", style="primary"))
     builder.row(p_btn(tr(uid, "back"), "back_main", "back"))
 
     await callback.message.edit_text(
@@ -3637,10 +3640,16 @@ async def premium_menu(callback: types.CallbackQuery):
 @dp.callback_query(F.data == "prem_auto_menu")
 async def premium_auto_menu(callback: types.CallbackQuery):
     builder = InlineKeyboardBuilder()
-    for key in ("prem_3", "prem_6", "prem_12_gift", "prem_12"):
+    auto_items = [
+        ("prem_3", "primary"),
+        ("prem_6", "success"),
+        ("prem_12_gift", "success"),
+        ("prem_12", "primary")
+    ]
+    for key, b_style in auto_items:
         if key in PREMIUM_PRICES:
             data = PREMIUM_PRICES[key]
-            builder.row(p_btn(data["name"], f"buyprod_{key}", key if key in menu_emojis else "premium"))
+            builder.row(p_btn(data["name"], f"buyprod_{key}", key if key in menu_emojis else "premium", style=b_style))
     builder.row(p_btn("Orqaga", "buy_premium", "back"))
 
     await callback.message.edit_text(
@@ -3653,10 +3662,14 @@ async def premium_auto_menu(callback: types.CallbackQuery):
 @dp.callback_query(F.data == "prem_admin_menu")
 async def premium_admin_menu(callback: types.CallbackQuery):
     builder = InlineKeyboardBuilder()
-    for key in ("prem_1", "prem_12"):
+    admin_items = [
+        ("prem_1", "success"),
+        ("prem_12", "primary")
+    ]
+    for key, b_style in admin_items:
         if key in PREMIUM_PRICES:
             data = PREMIUM_PRICES[key]
-            builder.row(p_btn(data["name"], f"buyprod_{key}", key if key in menu_emojis else "premium"))
+            builder.row(p_btn(data["name"], f"buyprod_{key}", key if key in menu_emojis else "premium", style=b_style))
     builder.row(p_btn("Orqaga", "buy_premium", "back"))
 
     await callback.message.edit_text(
@@ -3678,7 +3691,7 @@ async def select_product(callback: types.CallbackQuery, state: FSMContext):
     user_id = callback.from_user.id
     if get_balance(user_id) < product["price"]:
         builder = InlineKeyboardBuilder()
-        builder.row(p_btn(tr(user_id, "deposit"), "deposit", "deposit"))
+        builder.row(p_btn(tr(user_id, "deposit"), "deposit", "deposit", style="success"))
         builder.row(p_btn(tr(user_id, "back"), "back_main", "back"))
 
         await callback.message.edit_text(
@@ -3694,8 +3707,8 @@ async def select_product(callback: types.CallbackQuery, state: FSMContext):
     await state.update_data(prod_key=prod_key, product=product)
 
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn("O'zimning profilimga", "target_self", "profile"))
-    builder.row(p_btn("Boshqa profilga", "target_other", "target_other"))
+    builder.row(p_btn("O'zimning profilimga", "target_self", "profile", style="success"))
+    builder.row(p_btn("Boshqa profilga", "target_other", "target_other", style="primary"))
     builder.row(p_btn(tr(user_id, "back"), "back_main", "back"))
 
     text = (
@@ -3755,8 +3768,8 @@ async def confirm_purchase_menu(callback: types.CallbackQuery, state: FSMContext
         return
 
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn("Xaridni tasdiqlash", "confirm_buy", "confirm_buy"))
-    builder.row(p_btn("Bekor qilish", "cancel", "cancel"))
+    builder.row(p_btn("Xaridni tasdiqlash", "confirm_buy", "confirm_buy", style="success"))
+    builder.row(p_btn("Bekor qilish", "cancel", "cancel", style="danger"))
 
     text = (
         f"<blockquote><b>Xaridni tasdiqlang:</b>\n\n"
@@ -3779,8 +3792,8 @@ async def confirm_purchase_menu_msg(message: types.Message, state: FSMContext):
         return
 
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn("Xaridni tasdiqlash", "confirm_buy", "confirm_buy"))
-    builder.row(p_btn("Bekor qilish", "cancel", "cancel"))
+    builder.row(p_btn("Xaridni tasdiqlash", "confirm_buy", "confirm_buy", style="success"))
+    builder.row(p_btn("Bekor qilish", "cancel", "cancel", style="danger"))
 
     text = (
         f"<blockquote><b>Xaridni tasdiqlang:</b>\n\n"
@@ -3834,8 +3847,8 @@ async def execute_purchase(callback: types.CallbackQuery, state: FSMContext):
 
     admin_builder = InlineKeyboardBuilder()
     admin_builder.row(
-        p_btn("Tasdiqlash", f"ord_done_{order_id}", "check_btn"),
-        p_btn("Bekor qilish", f"ord_cancel_{order_id}", "cancel")
+        p_btn("Tasdiqlash", f"ord_done_{order_id}", "check_btn", style="success"),
+        p_btn("Bekor qilish", f"ord_cancel_{order_id}", "cancel", style="danger")
     )
 
     admin_text = (
