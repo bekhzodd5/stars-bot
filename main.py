@@ -618,6 +618,9 @@ def format_stars(value):
 def lang(user_id):
     return user_languages.get(str(user_id), "uz")
 
+def curr(user_id=0):
+    return "сум" if lang(user_id) == "ru" else "so'm"
+
 LANG_TEXT = {
     "uz": {
         "settings": "Sozlamalar", "profile": "Profil", "language": "Til", "choose_lang": "Interfeys tilini tanlang:",
@@ -632,7 +635,17 @@ LANG_TEXT = {
         "balance_text": "Sizning hisobingiz", "current_balance": "Pul balansi:",
         "auto_pay": "⚡️ Avto to'lov (PayHamyon)", "manual_pay": "💳 Qo'lda to'lov (Chek orqali)",
         "check_pay": "🔄 To'lovni tekshirish", "cancel_pay": "❌ Bekor qilish",
-        "choose_pay_method": "To'lov usulini tanlang:"
+        "choose_pay_method": "To'lov usulini tanlang:",
+        "stars_menu_title": "Stars paketini tanlang:", "stars_menu_desc": "Kerakli paketni bosing.",
+        "custom_stars_btn": "Boshqa miqdorda Stars",
+        "gifts_menu_title": "Gift olish", "gifts_menu_desc": "Kerakli Giftni tanlang:",
+        "premium_menu_title": "Premium olish", "premium_menu_desc": "Premium berish usulini tanlang:",
+        "prem_auto_btn": "Profilga kirmasdan (Avto)", "prem_admin_btn": "Profilga kirib (Admin orqali)",
+        "prem_auto_title": "Avtomatik Premium", "prem_auto_desc": "Kerakli muddatni tanlang:",
+        "prem_admin_title": "Admin orqali Premium", "prem_admin_desc": "Ushbu obunalar akkauntingizga kirib faollashtirib beriladi.\n\nPaketni tanlang:",
+        "sell_gift_title": "Gift sotish", "sell_gift_desc": "Sotmoqchi bo'lgan Giftni tanlang:",
+        "target_self": "O'zimning profilimga", "target_other": "Boshqa profilga",
+        "confirm_buy": "Xaridni tasdiqlash", "cancel": "Bekor qilish"
     },
     "ru": {
         "settings": "Настройки", "profile": "Профиль", "language": "Язык", "choose_lang": "Выберите язык интерфейса:",
@@ -647,9 +660,107 @@ LANG_TEXT = {
         "balance_text": "Ваш счёт", "current_balance": "Баланс:",
         "auto_pay": "⚡️ Авто-оплата (PayHamyon)", "manual_pay": "💳 Ручная оплата (Через чек)",
         "check_pay": "🔄 Проверить оплату", "cancel_pay": "❌ Отменить",
-        "choose_pay_method": "Выберите способ оплаты:"
+        "choose_pay_method": "Выберите способ оплаты:",
+        "stars_menu_title": "Выберите пакет Stars:", "stars_menu_desc": "Нажмите на нужный пакет.",
+        "custom_stars_btn": "Другое количество Stars",
+        "gifts_menu_title": "Купить Gift", "gifts_menu_desc": "Выберите подарок:",
+        "premium_menu_title": "Купить Premium", "premium_menu_desc": "Выберите способ оформления:",
+        "prem_auto_btn": "Без входа в аккаунт (Авто)", "prem_admin_btn": "С входом в аккаунт (Через админа)",
+        "prem_auto_title": "Автоматический Premium", "prem_auto_desc": "Выберите нужный срок:",
+        "prem_admin_title": "Premium через админа", "prem_admin_desc": "Эти подписки активируются с входом в ваш аккаунт.\n\nВыберите пакет:",
+        "sell_gift_title": "Продать Gift", "sell_gift_desc": "Выберите подарок для продажи:",
+        "target_self": "На свой профиль", "target_other": "На другой профиль",
+        "confirm_buy": "Подтвердить покупку", "cancel": "Отменить"
     }
 }
+
+GIFT_NAMES_I18N = {
+    "gift_15_1": {"uz": "Ayiqcha", "ru": "Мишка"},
+    "gift_15_2": {"uz": "Yurakcha", "ru": "Сердечко"},
+    "gift_25_1": {"uz": "Qizil Atirgul", "ru": "Красная роза"},
+    "gift_25_2": {"uz": "Syurpriz quti", "ru": "Коробка с сюрпризом"},
+    "gift_50_1": {"uz": "Lola guldastasi", "ru": "Букет тюльпанов"},
+    "gift_50_2": {"uz": "Kosmik Raketa", "ru": "Космическая ракета"},
+    "gift_50_3": {"uz": "Tug'ilgan kun torti", "ru": "Праздничный торт"},
+    "gift_50_4": {"uz": "Shampan", "ru": "Шампанское"},
+    "gift_100_1": {"uz": "Oltin Kubok", "ru": "Золотой кубок"},
+    "gift_100_2": {"uz": "Moviy Olmos", "ru": "Синий бриллиант"},
+    "gift_100_3": {"uz": "Brilliant Uzuk", "ru": "Бриллиантовое кольцо"},
+}
+
+PREMIUM_NAMES_I18N = {
+    "prem_1": {"uz": "1 Oylik Premium", "ru": "1 Месяц Premium (Через админа)"},
+    "prem_3": {"uz": "3 Oylik Premium", "ru": "3 Месяца Premium"},
+    "prem_6": {"uz": "6 Oylik Premium", "ru": "6 Месяцев Premium"},
+    "prem_12": {"uz": "1 Yillik Premium (Akkauntga kirib)", "ru": "1 Год (Вход в аккаунт)"},
+    "prem_12_gift": {"uz": "1 Yillik Premium (Sovg'a tariqasida)", "ru": "1 Год (Подарок / Без входа)"},
+}
+
+SELL_GIFT_NAMES_I18N = {
+    "sell_gift_ayiqcha": {"uz": "Ayiqcha", "ru": "Мишка"},
+    "sell_gift_yurak": {"uz": "Yurakcha", "ru": "Сердечко"},
+    "sell_gift_atirgul": {"uz": "Qizil Atirgul", "ru": "Красная роза"},
+    "sell_gift_quti": {"uz": "Syurpriz quti", "ru": "Коробка с сюрпризом"},
+    "sell_gift_lola": {"uz": "Lola guldastasi", "ru": "Букет тюльпанов"},
+    "sell_gift_raketa": {"uz": "Kosmik Raketa", "ru": "Космическая ракета"},
+    "sell_gift_tort": {"uz": "Tug'ilgan kun torti", "ru": "Праздничный торт"},
+    "sell_gift_shampan": {"uz": "Shampan", "ru": "Шампанское"},
+    "sell_gift_kubok": {"uz": "Oltin Kubok", "ru": "Золотой кубок"},
+    "sell_gift_olmos": {"uz": "Moviy Olmos", "ru": "Синий бриллиант"},
+    "sell_gift_yuzuk": {"uz": "Brilliant Uzuk", "ru": "Бриллиантовое кольцо"},
+    "sell_gift_bear": {"uz": "Ayiqcha", "ru": "Мишка"},
+    "sell_gift_heart": {"uz": "Yurakcha", "ru": "Сердечко"},
+    "sell_gift_box": {"uz": "Syurpriz quti", "ru": "Коробка с сюрпризом"},
+    "sell_gift_rose": {"uz": "Qizil Atirgul", "ru": "Красная роза"},
+    "sell_gift_rocket": {"uz": "Kosmik Raketa", "ru": "Космическая ракета"},
+    "sell_gift_cake": {"uz": "Tug'ilgan kun torti", "ru": "Праздничный торт"},
+    "sell_gift_gem": {"uz": "Moviy Olmos", "ru": "Синий бриллиант"},
+    "sell_gift_ring": {"uz": "Brilliant Uzuk", "ru": "Бриллиантовое кольцо"},
+}
+
+def get_gift_btn_text(key, user_id=0):
+    code = lang(user_id)
+    c_unit = curr(user_id)
+    info = GIFT_NAMES_I18N.get(key, {})
+    name = info.get(code, info.get("uz", "Gift"))
+    p = prices["gifts"].get(key, 0)
+    return f"{name} - {money(p)} {c_unit}"
+
+def get_gift_formatted(key, user_id=0):
+    code = lang(user_id)
+    c_unit = curr(user_id)
+    info = GIFT_NAMES_I18N.get(key, {})
+    name = info.get(code, info.get("uz", "Gift"))
+    p = prices["gifts"].get(key, 0)
+    count = 15
+    if "25" in key: count = 25
+    elif "50" in key: count = 50
+    elif "100" in key: count = 100
+    return f"{custom_tag(key)}<b>{name}</b> ({count} ⭐) - {money(p)} {c_unit}"
+
+def get_premium_btn_text(key, user_id=0):
+    code = lang(user_id)
+    c_unit = curr(user_id)
+    info = PREMIUM_NAMES_I18N.get(key, {})
+    name = info.get(code, info.get("uz", "Premium"))
+    p = prices["premium"].get(key, 0)
+    return f"{name} — {money(p)} {c_unit}"
+
+def get_sell_gift_btn_text(key, user_id=0):
+    code = lang(user_id)
+    c_unit = curr(user_id)
+    info = SELL_GIFT_NAMES_I18N.get(key, {})
+    name = info.get(code, info.get("uz", key))
+    p = prices['sell_gifts'].get(key)
+    if p is None:
+        alias = SELL_GIFT_ALIAS.get(key)
+        p = prices['sell_gifts'].get(alias, 0) if alias else 0
+    return f"{name} — {money(p)} {c_unit}"
+
+def get_sell_gift_name(key, user_id=0):
+    code = lang(user_id)
+    info = SELL_GIFT_NAMES_I18N.get(key, {})
+    return info.get(code, info.get("uz", SELL_GIFT_INFO.get(key, "Gift")))
 
 def tr(user_id, key):
     return LANG_TEXT.get(lang(user_id), LANG_TEXT["uz"]).get(key, LANG_TEXT["uz"].get(key, key))
@@ -3318,13 +3429,14 @@ async def stars_menu(callback: types.CallbackQuery):
     builder = InlineKeyboardBuilder()
     for idx, (key, data) in enumerate(STARS_PRICES.items()):
         btn_style = "success" if ((idx // 2 + idx % 2) % 2 == 0) else "primary"
-        builder.add(p_btn(data["name"], f"buyprod_{key}", "stars", style=btn_style))
+        btn_text = f"{data['count']} Stars - {money(data['price'])} {curr(uid)}"
+        builder.add(p_btn(btn_text, f"buyprod_{key}", "stars", style=btn_style))
     builder.adjust(2)
-    builder.row(p_btn("Boshqa miqdorda Stars", "custom_stars", "custom_stars", style="success"))
+    builder.row(p_btn(tr(uid, "custom_stars_btn"), "custom_stars", "custom_stars", style="success"))
     builder.row(p_btn(tr(uid, "back"), "back_main", "back"))
 
     await callback.message.edit_text(
-        f"<blockquote>{custom_tag('stars')}<b>Stars paketini tanlang:</b>\n\nKerakli paketni bosing.</blockquote>",
+        f"<blockquote>{custom_tag('stars')}<b>{tr(uid, 'stars_menu_title')}</b>\n\n{tr(uid, 'stars_menu_desc')}</blockquote>",
         reply_markup=builder.as_markup()
     )
     await callback.answer()
@@ -3334,12 +3446,21 @@ async def stars_menu(callback: types.CallbackQuery):
 async def custom_stars_start(callback: types.CallbackQuery, state: FSMContext):
     uid = callback.from_user.id
     one_star_price = prices.get("custom_star", 225)
-    text = (
-        f"<blockquote>{custom_tag('custom_stars')}<b>Boshqa miqdorda Stars olish</b>\n\n"
-        f"1 ta Stars narxi: <b>{money(one_star_price)} so'm</b>\n\n"
-        "Minimal buyurtma: 50 Stars\n\n"
-        "Qancha Stars olmoqchisiz?</blockquote>"
-    )
+    c_unit = curr(uid)
+    if lang(uid) == "ru":
+        text = (
+            f"<blockquote>{custom_tag('custom_stars')}<b>Купить другое количество Stars</b>\n\n"
+            f"Цена за 1 Stars: <b>{money(one_star_price)} {c_unit}</b>\n\n"
+            "Минимальный заказ: 50 Stars\n\n"
+            "Сколько Stars вы хотите купить?</blockquote>"
+        )
+    else:
+        text = (
+            f"<blockquote>{custom_tag('custom_stars')}<b>Boshqa miqdorda Stars olish</b>\n\n"
+            f"1 ta Stars narxi: <b>{money(one_star_price)} {c_unit}</b>\n\n"
+            "Minimal buyurtma: 50 Stars\n\n"
+            "Qancha Stars olmoqchisiz?</blockquote>"
+        )
     await callback.message.edit_text(text, reply_markup=back_main_keyboard(uid))
     await state.set_state(CustomStarsState.waiting_for_stars_amount)
     await callback.answer()
@@ -3348,21 +3469,27 @@ async def custom_stars_start(callback: types.CallbackQuery, state: FSMContext):
 @dp.message(CustomStarsState.waiting_for_stars_amount)
 async def process_custom_stars_amount(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
+    c_unit = curr(user_id)
+    is_ru = (lang(user_id) == "ru")
+
     if not message.text or not message.text.isdigit():
-        msg = await message.answer("<blockquote>⚠️ Iltimos, faqat raqam kiriting!</blockquote>")
+        err_msg = "<blockquote>⚠️ Пожалуйста, введите только число!</blockquote>" if is_ru else "<blockquote>⚠️ Iltimos, faqat raqam kiriting!</blockquote>"
+        msg = await message.answer(err_msg)
         await asyncio.sleep(2)
         await safe_delete(msg)
         return
 
     count = int(message.text)
     if count < 50:
-        msg = await message.answer("<blockquote>⚠️ <b>Minimal buyurtma — 50 Stars!</b>\n\nKamida 50 Stars kiriting.</blockquote>")
+        err_msg = "<blockquote>⚠️ <b>Минимальный заказ — 50 Stars!</b>\n\nВведите не менее 50 Stars.</blockquote>" if is_ru else "<blockquote>⚠️ <b>Minimal buyurtma — 50 Stars!</b>\n\nKamida 50 Stars kiriting.</blockquote>"
+        msg = await message.answer(err_msg)
         await asyncio.sleep(3)
         await safe_delete(msg)
         return
 
     if count > 10000:
-        msg = await message.answer("<blockquote>❌ Maksimal miqdor 10.000 Stars.</blockquote>")
+        err_msg = "<blockquote>❌ Максимальное количество 10.000 Stars.</blockquote>" if is_ru else "<blockquote>❌ Maksimal miqdor 10.000 Stars.</blockquote>"
+        msg = await message.answer(err_msg)
         await asyncio.sleep(2)
         await safe_delete(msg)
         return
@@ -3371,8 +3498,8 @@ async def process_custom_stars_amount(message: types.Message, state: FSMContext)
     total_price = int(count * float(prices.get("custom_star", 220)))
 
     product = {
-        "name": f"{count} Stars - {money(total_price)} so'm",
-        "formatted": f"{custom_tag('stars')}<b>{count} Stars</b> - {money(total_price)} so'm",
+        "name": f"{count} Stars - {money(total_price)} {c_unit}",
+        "formatted": f"{custom_tag('stars')}<b>{count} Stars</b> - {money(total_price)} {c_unit}",
         "price": total_price,
         "count": count
     }
@@ -3380,27 +3507,42 @@ async def process_custom_stars_amount(message: types.Message, state: FSMContext)
     await state.update_data(prod_key=f"custom_stars_{count}", product=product)
 
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn("O'zimning profilimga", "target_self", "profile", style="success"))
-    builder.row(p_btn("Boshqa profilga", "target_other", "target_other", style="primary"))
+    builder.row(p_btn(tr(user_id, "target_self"), "target_self", "profile", style="success"))
+    builder.row(p_btn(tr(user_id, "target_other"), "target_other", "target_other", style="primary"))
     builder.row(p_btn(tr(user_id, "back"), "buy_stars", "back"))
 
     if get_balance(user_id) < total_price:
-        text = (
-            f"<blockquote>{custom_tag('stars')}<b>Stars buyurtmasi</b>\n\n"
-            f"Mahsulot: <b>{count} Stars</b>\n"
-            f"Narxi: <b>{money(total_price)} so'm</b>\n\n"
-            "⚠️ <b>Hisobingizda mablag' yetarli emas.</b>\nAvval hisobingizni to'ldiring.</blockquote>"
-        )
+        if is_ru:
+            text = (
+                f"<blockquote>{custom_tag('stars')}<b>Заказ Stars</b>\n\n"
+                f"Товар: <b>{count} Stars</b>\n"
+                f"Цена: <b>{money(total_price)} {c_unit}</b>\n\n"
+                f"⚠️ <b>На вашем счете недостаточно средств ({money(get_balance(user_id))} {c_unit}).</b>\nСначала пополните счет.</blockquote>"
+            )
+        else:
+            text = (
+                f"<blockquote>{custom_tag('stars')}<b>Stars buyurtmasi</b>\n\n"
+                f"Mahsulot: <b>{count} Stars</b>\n"
+                f"Narxi: <b>{money(total_price)} {c_unit}</b>\n\n"
+                f"⚠️ <b>Hisobingizda mablag' yetarli emas ({money(get_balance(user_id))} {c_unit}).</b>\nAvval hisobingizni to'ldiring.</blockquote>"
+            )
         builder = InlineKeyboardBuilder()
         builder.row(p_btn(tr(user_id, "deposit"), "deposit", "deposit", style="success"))
         builder.row(p_btn(tr(user_id, "back"), "buy_stars", "back"))
         await state.clear()
     else:
-        text = (
-            f"<blockquote>{custom_tag('stars')}<b>Mahsulot:</b> {product['formatted']}\n"
-            f"<b>Narxi:</b> {money(total_price)} so'm\n\n"
-            "Qaysi profilga olmoqchisiz?</blockquote>"
-        )
+        if is_ru:
+            text = (
+                f"<blockquote>{custom_tag('stars')}<b>Товар:</b> {product['formatted']}\n"
+                f"<b>Цена:</b> {money(total_price)} {c_unit}\n\n"
+                "На какой профиль хотите оформить?</blockquote>"
+            )
+        else:
+            text = (
+                f"<blockquote>{custom_tag('stars')}<b>Mahsulot:</b> {product['formatted']}\n"
+                f"<b>Narxi:</b> {money(total_price)} {c_unit}\n\n"
+                "Qaysi profilga olmoqchisiz?</blockquote>"
+            )
 
     await delete_previous_menu(user_id)
     msg = await message.answer(text, reply_markup=builder.as_markup())
@@ -3413,12 +3555,13 @@ async def gift_menu(callback: types.CallbackQuery):
     builder = InlineKeyboardBuilder()
     for idx, (key, data) in enumerate(GIFT_PRICES.items()):
         btn_style = "success" if ((idx // 2 + idx % 2) % 2 == 0) else "primary"
-        builder.add(p_btn(data["name"], f"buyprod_{key}", key, style=btn_style))
+        btn_text = get_gift_btn_text(key, uid)
+        builder.add(p_btn(btn_text, f"buyprod_{key}", key, style=btn_style))
     builder.adjust(2)
     builder.row(p_btn(tr(uid, "back"), "back_main", "back"))
 
     await callback.message.edit_text(
-        f"<blockquote>{custom_tag('gift')}<b>Gift olish</b>\n\nKerakli Giftni tanlang:</blockquote>",
+        f"<blockquote>{custom_tag('gift')}<b>{tr(uid, 'gifts_menu_title')}</b>\n\n{tr(uid, 'gifts_menu_desc')}</blockquote>",
         reply_markup=builder.as_markup()
     )
     await callback.answer()
@@ -3470,20 +3613,16 @@ async def sell_gift_start(callback: types.CallbackQuery):
         "sell_gift_kubok", "sell_gift_olmos", "sell_gift_yuzuk"
     ]
     for idx, key in enumerate(active_keys):
-        name = SELL_GIFT_INFO.get(key, key)
-        p = prices['sell_gifts'].get(key)
-        if p is None:
-            alias = SELL_GIFT_ALIAS.get(key)
-            p = prices['sell_gifts'].get(alias, 0) if alias else 0
+        btn_text = get_sell_gift_btn_text(key, uid)
         btn_style = "success" if ((idx // 2 + idx % 2) % 2 == 0) else "primary"
         builder.add(
-            p_btn(f"{name} — {money(p)} so'm", key, key, style=btn_style)
+            p_btn(btn_text, key, key, style=btn_style)
         )
     builder.adjust(2)
     builder.row(p_btn(tr(uid, "back"), "back_main", "back"))
 
     await callback.message.edit_text(
-        f"<blockquote>{custom_tag('sell')}<b>Qaysi giftni sotmoqchisiz?</b></blockquote>",
+        f"<blockquote>{custom_tag('sell')}<b>{tr(uid, 'sell_gift_title')}</b>\n\n{tr(uid, 'sell_gift_desc')}</blockquote>",
         reply_markup=builder.as_markup()
     )
     await callback.answer()
@@ -3496,32 +3635,44 @@ async def process_gift_choice(call: types.CallbackQuery, state: FSMContext):
         await call.answer()
         return
 
-    gift_name = SELL_GIFT_INFO[key]
+    uid = call.from_user.id
+    gift_name = get_sell_gift_name(key, uid)
     price_val = prices['sell_gifts'].get(key)
     if price_val is None:
         alias = SELL_GIFT_ALIAS.get(key)
         price_val = prices['sell_gifts'].get(alias, 0) if alias else 0
 
-    price_str = f"{money(price_val)} so'm"
+    price_str = f"{money(price_val)} {curr(uid)}"
     await state.clear()
     await state.update_data(gift_key=key, gift_name=gift_name, price_str=price_str, price_val=price_val)
 
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn("💳 Plastik kartaga", "sell_payout_card", "deposit", style="success"))
-    builder.row(p_btn("👛 Bot hisobiga (Balansga)", "sell_payout_balance", "balance", style="primary"))
-    builder.row(p_btn(tr(call.from_user.id, "back"), "sell_gift_menu", "back"))
+    if lang(uid) == "ru":
+        builder.row(p_btn("💳 На пластиковую карту", "sell_payout_card", "deposit", style="success"))
+        builder.row(p_btn("👛 На баланс бота", "sell_payout_balance", "balance", style="primary"))
+        builder.row(p_btn(tr(uid, "back"), "sell_gift_menu", "back"))
+        text = (
+            f"<blockquote>{custom_tag('sell')}Вы выбрали продажу <b>{gift_name}</b>.\n"
+            f"Цена: <b>{price_str}</b>\n\n"
+            "Куда вы хотите получить средства?</blockquote>"
+        )
+    else:
+        builder.row(p_btn("💳 Plastik kartaga", "sell_payout_card", "deposit", style="success"))
+        builder.row(p_btn("👛 Bot hisobiga (Balansga)", "sell_payout_balance", "balance", style="primary"))
+        builder.row(p_btn(tr(uid, "back"), "sell_gift_menu", "back"))
+        text = (
+            f"<blockquote>{custom_tag('sell')}Siz <b>{gift_name}</b> sotishni tanladingiz.\n"
+            f"Narxi: <b>{price_str}</b>\n\n"
+            "Pulingizni qayerga qabul qilib olmoqchisiz?</blockquote>"
+        )
 
-    text = (
-        f"<blockquote>{custom_tag('sell')}Siz <b>{gift_name}</b> sotishni tanladingiz.\n"
-        f"Narxi: <b>{price_str}</b>\n\n"
-        "Pulingizni qayerga qabul qilib olmoqchisiz?</blockquote>"
-    )
     await call.message.edit_text(text, reply_markup=builder.as_markup())
     await call.answer()
 
 
 @dp.callback_query(F.data == "sell_payout_balance")
 async def process_payout_balance(call: types.CallbackQuery, state: FSMContext):
+    uid = call.from_user.id
     data = await state.get_data()
     gift_name = data.get("gift_name")
     price_str = data.get("price_str")
@@ -3529,32 +3680,53 @@ async def process_payout_balance(call: types.CallbackQuery, state: FSMContext):
     await state.update_data(payout_type="balance", card=None)
 
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn("✅ Tashladim", "sell_confirm_sent", "sent_btn", style="success"))
-    builder.row(p_btn(tr(call.from_user.id, "cancel"), "back_main", "cancel", style="danger"))
+    btn_label = "✅ Я отправил" if lang(uid) == "ru" else "✅ Tashladim"
+    builder.row(p_btn(btn_label, "sell_confirm_sent", "sent_btn", style="success"))
+    builder.row(p_btn(tr(uid, "cancel"), "back_main", "cancel", style="danger"))
 
-    text = (
-        f"<blockquote>{custom_tag('sell')}<b>Gift sotish (Bot hisobiga)</b>\n\n"
-        f"Gift: <b>{gift_name}</b>\n"
-        f"To'lanadigan summa: <b>{price_str}</b>\n"
-        "Qabul qilish usuli: <b>Bot hisobiga (Balansga)</b>\n\n"
-        f"1. Telegram orqali <b>{ADMIN_USERNAME}</b> profiliga kiring.\n"
-        f"2. Sovg'ani (<b>{gift_name}</b>) {ADMIN_USERNAME} ga yuboring.\n"
-        "3. Sovg'ani yuborganingizdan so'ng, pastdagi <b>Tashladim</b> tugmasini bosing!</blockquote>"
-    )
+    if lang(uid) == "ru":
+        text = (
+            f"<blockquote>{custom_tag('sell')}<b>Продажа Gift (На баланс бота)</b>\n\n"
+            f"Gift: <b>{gift_name}</b>\n"
+            f"Сумма к выплате: <b>{price_str}</b>\n"
+            "Способ получения: <b>На баланс бота</b>\n\n"
+            f"1. Перейдите в Telegram профиль <b>{ADMIN_USERNAME}</b>.\n"
+            f"2. Отправьте подарок (<b>{gift_name}</b>) пользователю {ADMIN_USERNAME}.\n"
+            "3. После отправки подарка нажмите кнопку <b>Я отправил</b> ниже!</blockquote>"
+        )
+    else:
+        text = (
+            f"<blockquote>{custom_tag('sell')}<b>Gift sotish (Bot hisobiga)</b>\n\n"
+            f"Gift: <b>{gift_name}</b>\n"
+            f"To'lanadigan summa: <b>{price_str}</b>\n"
+            "Qabul qilish usuli: <b>Bot hisobiga (Balansga)</b>\n\n"
+            f"1. Telegram orqali <b>{ADMIN_USERNAME}</b> profiliga kiring.\n"
+            f"2. Sovg'ani (<b>{gift_name}</b>) {ADMIN_USERNAME} ga yuboring.\n"
+            "3. Sovg'ani yuborganingizdan so'ng, pastdagi <b>Tashladim</b> tugmasini bosing!</blockquote>"
+        )
+
     await call.message.edit_text(text, reply_markup=builder.as_markup())
     await call.answer()
 
 
 @dp.callback_query(F.data == "sell_payout_card")
 async def process_payout_card(call: types.CallbackQuery, state: FSMContext):
+    uid = call.from_user.id
     await state.update_data(payout_type="card")
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn(tr(call.from_user.id, "back"), "sell_gift_menu", "back"))
+    builder.row(p_btn(tr(uid, "back"), "sell_gift_menu", "back"))
 
-    text = (
-        f"<blockquote>{custom_tag('deposit')}<b>Plastik karta raqamingizni yozing:</b>\n\n"
-        "<i>(16 xonali karta raqami)</i></blockquote>"
-    )
+    if lang(uid) == "ru":
+        text = (
+            f"<blockquote>{custom_tag('deposit')}<b>Введите номер вашей банковской карты:</b>\n\n"
+            "<i>(16-значный номер карты)</i></blockquote>"
+        )
+    else:
+        text = (
+            f"<blockquote>{custom_tag('deposit')}<b>Plastik karta raqamingizni yozing:</b>\n\n"
+            "<i>(16 xonali karta raqami)</i></blockquote>"
+        )
+
     await call.message.edit_text(text, reply_markup=builder.as_markup())
     await state.set_state(GiftSellState.waiting_for_card_number)
     await call.answer()
@@ -3562,9 +3734,11 @@ async def process_payout_card(call: types.CallbackQuery, state: FSMContext):
 
 @dp.message(GiftSellState.waiting_for_card_number)
 async def process_sell_card_number(message: types.Message, state: FSMContext):
+    uid = message.from_user.id
     card_raw = re.sub(r"\D", "", message.text or "")
     if len(card_raw) != 16:
-        msg = await message.answer("<blockquote>⚠️ <b>Xatolik!</b>\n\nIltimos, to'g'ri 16 xonali karta raqamini kiriting.</blockquote>")
+        err_text = "<blockquote>⚠️ <b>Ошибка!</b>\n\nПожалуйста, введите корректный 16-значный номер карты.</blockquote>" if lang(uid) == "ru" else "<blockquote>⚠️ <b>Xatolik!</b>\n\nIltimos, to'g'ri 16 xonali karta raqamini kiriting.</blockquote>"
+        msg = await message.answer(err_text)
         await asyncio.sleep(2.5)
         await safe_delete(msg)
         return
@@ -3577,21 +3751,34 @@ async def process_sell_card_number(message: types.Message, state: FSMContext):
     await safe_delete(message)
 
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn("✅ Tashladim", "sell_confirm_sent", "sent_btn", style="success"))
-    builder.row(p_btn(tr(message.from_user.id, "cancel"), "back_main", "cancel", style="danger"))
+    btn_label = "✅ Я отправил" if lang(uid) == "ru" else "✅ Tashladim"
+    builder.row(p_btn(btn_label, "sell_confirm_sent", "sent_btn", style="success"))
+    builder.row(p_btn(tr(uid, "cancel"), "back_main", "cancel", style="danger"))
 
-    text = (
-        f"<blockquote>{custom_tag('sell')}<b>Gift sotish (Plastik kartaga)</b>\n\n"
-        f"Gift: <b>{gift_name}</b>\n"
-        f"To'lanadigan summa: <b>{price_str}</b>\n"
-        f"Kartangiz: <code>{formatted_card}</code>\n\n"
-        f"1. Telegram orqali <b>{ADMIN_USERNAME}</b> profiliga kiring.\n"
-        f"2. Sovg'ani (<b>{gift_name}</b>) {ADMIN_USERNAME} ga yuboring.\n"
-        "3. Sovg'ani yuborganingizdan so'ng, pastdagi <b>Tashladim</b> tugmasini bosing!</blockquote>"
-    )
-    await delete_previous_menu(message.from_user.id)
+    if lang(uid) == "ru":
+        text = (
+            f"<blockquote>{custom_tag('sell')}<b>Продажа Gift (На банковскую карту)</b>\n\n"
+            f"Gift: <b>{gift_name}</b>\n"
+            f"Сумма к выплате: <b>{price_str}</b>\n"
+            f"Ваша карта: <code>{formatted_card}</code>\n\n"
+            f"1. Перейдите в Telegram профиль <b>{ADMIN_USERNAME}</b>.\n"
+            f"2. Отправьте подарок (<b>{gift_name}</b>) пользователю {ADMIN_USERNAME}.\n"
+            "3. После отправки подарка нажмите кнопку <b>Я отправил</b> ниже!</blockquote>"
+        )
+    else:
+        text = (
+            f"<blockquote>{custom_tag('sell')}<b>Gift sotish (Plastik kartaga)</b>\n\n"
+            f"Gift: <b>{gift_name}</b>\n"
+            f"To'lanadigan summa: <b>{price_str}</b>\n"
+            f"Kartangiz: <code>{formatted_card}</code>\n\n"
+            f"1. Telegram orqali <b>{ADMIN_USERNAME}</b> profiliga kiring.\n"
+            f"2. Sovg'ani (<b>{gift_name}</b>) {ADMIN_USERNAME} ga yuboring.\n"
+            "3. Sovg'ani yuborganingizdan so'ng, pastdagi <b>Tashladim</b> tugmasini bosing!</blockquote>"
+        )
+
+    await delete_previous_menu(uid)
     msg = await message.answer(text, reply_markup=builder.as_markup())
-    last_menu_messages[message.from_user.id] = msg.message_id
+    last_menu_messages[uid] = msg.message_id
 
 
 @dp.callback_query(F.data == "sell_confirm_sent")
@@ -3603,8 +3790,10 @@ async def process_sell_confirm_sent(call: types.CallbackQuery, state: FSMContext
     payout_type = data.get("payout_type", "balance")
     card = data.get("card")
 
+    uid = call.from_user.id
     if not gift_name:
-        await call.answer("❌ Ma'lumot topilmadi!", show_alert=True)
+        err_msg = "❌ Данные не найдены!" if lang(uid) == "ru" else "❌ Ma'lumot topilmadi!"
+        await call.answer(err_msg, show_alert=True)
         return
 
     user = call.from_user
@@ -3624,18 +3813,31 @@ async def process_sell_confirm_sent(call: types.CallbackQuery, state: FSMContext
     save_data()
     await state.clear()
 
-    payout_info = f"<code>{card}</code> kartasiga" if payout_type == "card" else "Bot hisobingizga (Balansga)"
+    if lang(uid) == "ru":
+        payout_info = f"на карту <code>{card}</code>" if payout_type == "card" else "на баланс бота"
+        user_reply = (
+            f"<blockquote>✅ <b>Ваша заявка принята!</b>\n\n"
+            f"Gift: <b>{gift_name}</b>\n"
+            f"Сумма: <b>{price_str}</b>\n"
+            f"Получение: <b>{payout_info}</b>\n\n"
+            f"После того как администратор ({ADMIN_USERNAME}) проверит получение подарка, средства будут отправлены.\n"
+            "Пожалуйста, ожидайте.</blockquote>"
+        )
+        toast_msg = "✅ Заявка отправлена администратору!"
+    else:
+        payout_info = f"<code>{card}</code> kartasiga" if payout_type == "card" else "Bot hisobingizga (Balansga)"
+        user_reply = (
+            f"<blockquote>✅ <b>So'rovingiz qabul qilindi!</b>\n\n"
+            f"Gift: <b>{gift_name}</b>\n"
+            f"Summa: <b>{price_str}</b>\n"
+            f"Qabul qilish: <b>{payout_info}</b>\n\n"
+            f"Admin ({ADMIN_USERNAME}) sovg'a kelganini tekshirib tasdiqlagach, pulingiz o'tkaziladi.\n"
+            "Kutishingizni so'raymiz.</blockquote>"
+        )
+        toast_msg = "✅ So'rov adminga yuborildi!"
 
-    user_reply = (
-        f"<blockquote>✅ <b>So'rovingiz qabul qilindi!</b>\n\n"
-        f"Gift: <b>{gift_name}</b>\n"
-        f"Summa: <b>{price_str}</b>\n"
-        f"Qabul qilish: <b>{payout_info}</b>\n\n"
-        f"Admin ({ADMIN_USERNAME}) sovg'a kelganini tekshirib tasdiqlagach, pulingiz o'tkaziladi.\n"
-        "Kutishingizni so'raymiz.</blockquote>"
-    )
     await call.message.edit_text(user_reply, reply_markup=back_main_keyboard(user.id))
-    await call.answer("✅ So'rov adminga yuborildi!")
+    await call.answer(toast_msg)
 
     payout_display = f"💳 Karta: <code>{card}</code>" if payout_type == "card" else "👛 Bot hisobiga (Balans)"
     admin_text = (
@@ -3941,12 +4143,12 @@ async def handle_webapp_order_reject(call: types.CallbackQuery):
 async def premium_menu(callback: types.CallbackQuery):
     uid = callback.from_user.id
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn("Profilga kirmasdan (Avto)", "prem_auto_menu", "prem_auto", style="success"))
-    builder.row(p_btn("Profilga kirib (Admin orqali)", "prem_admin_menu", "prem_admin", style="primary"))
+    builder.row(p_btn(tr(uid, "prem_auto_btn"), "prem_auto_menu", "prem_auto", style="success"))
+    builder.row(p_btn(tr(uid, "prem_admin_btn"), "prem_admin_menu", "prem_admin", style="primary"))
     builder.row(p_btn(tr(uid, "back"), "back_main", "back"))
 
     await callback.message.edit_text(
-        f"<blockquote>{custom_tag('premium')}<b>Premium olish</b>\n\nPremium berish usulini tanlang:</blockquote>",
+        f"<blockquote>{custom_tag('premium')}<b>{tr(uid, 'premium_menu_title')}</b>\n\n{tr(uid, 'premium_menu_desc')}</blockquote>",
         reply_markup=builder.as_markup()
     )
     await callback.answer()
@@ -3954,6 +4156,7 @@ async def premium_menu(callback: types.CallbackQuery):
 
 @dp.callback_query(F.data == "prem_auto_menu")
 async def premium_auto_menu(callback: types.CallbackQuery):
+    uid = callback.from_user.id
     builder = InlineKeyboardBuilder()
     auto_items = [
         ("prem_3", "primary"),
@@ -3962,12 +4165,12 @@ async def premium_auto_menu(callback: types.CallbackQuery):
     ]
     for key, b_style in auto_items:
         if key in PREMIUM_PRICES:
-            data = PREMIUM_PRICES[key]
-            builder.row(p_btn(data["name"], f"buyprod_{key}", key if key in menu_emojis else "premium", style=b_style))
-    builder.row(p_btn("Orqaga", "buy_premium", "back"))
+            btn_text = get_premium_btn_text(key, uid)
+            builder.row(p_btn(btn_text, f"buyprod_{key}", key if key in menu_emojis else "premium", style=b_style))
+    builder.row(p_btn(tr(uid, "back"), "buy_premium", "back"))
 
     await callback.message.edit_text(
-        f"<blockquote>{custom_tag('premium')}<b>Avtomatik Premium</b>\n\nKerakli muddatni tanlang:</blockquote>",
+        f"<blockquote>{custom_tag('premium')}<b>{tr(uid, 'prem_auto_title')}</b>\n\n{tr(uid, 'prem_auto_desc')}</blockquote>",
         reply_markup=builder.as_markup()
     )
     await callback.answer()
@@ -3975,6 +4178,7 @@ async def premium_auto_menu(callback: types.CallbackQuery):
 
 @dp.callback_query(F.data == "prem_admin_menu")
 async def premium_admin_menu(callback: types.CallbackQuery):
+    uid = callback.from_user.id
     builder = InlineKeyboardBuilder()
     admin_items = [
         ("prem_1", "success"),
@@ -3982,14 +4186,13 @@ async def premium_admin_menu(callback: types.CallbackQuery):
     ]
     for key, b_style in admin_items:
         if key in PREMIUM_PRICES:
-            data = PREMIUM_PRICES[key]
-            builder.row(p_btn(data["name"], f"buyprod_{key}", key if key in menu_emojis else "premium", style=b_style))
-    builder.row(p_btn("Orqaga", "buy_premium", "back"))
+            btn_text = get_premium_btn_text(key, uid)
+            builder.row(p_btn(btn_text, f"buyprod_{key}", key if key in menu_emojis else "premium", style=b_style))
+    builder.row(p_btn(tr(uid, "back"), "buy_premium", "back"))
 
     await callback.message.edit_text(
-        f"<blockquote>{custom_tag('premium')}<b>Admin orqali Premium</b>\n\n"
-        f"Ushbu obunalar akkauntingizga kirib faollashtirib beriladi.\n\n"
-        f"Paketni tanlang:</blockquote>",
+        f"<blockquote>{custom_tag('premium')}<b>{tr(uid, 'prem_admin_title')}</b>\n\n"
+        f"{tr(uid, 'prem_admin_desc')}</blockquote>",
         reply_markup=builder.as_markup()
     )
     await callback.answer()
@@ -3999,39 +4202,69 @@ async def premium_admin_menu(callback: types.CallbackQuery):
 async def select_product(callback: types.CallbackQuery, state: FSMContext):
     prod_key = callback.data.split("buyprod_", 1)[1]
     product = ALL_PRODUCTS.get(prod_key)
+    user_id = callback.from_user.id
+    c_unit = curr(user_id)
+    is_ru = (lang(user_id) == "ru")
 
     if not product:
-        await callback.answer("❌ Mahsulot topilmadi!", show_alert=True)
+        err_msg = "❌ Товар не найден!" if is_ru else "❌ Mahsulot topilmadi!"
+        await callback.answer(err_msg, show_alert=True)
         return
 
-    user_id = callback.from_user.id
+    # Generate localized formatted text
+    if prod_key.startswith("gift_"):
+        prod_formatted = get_gift_formatted(prod_key, user_id)
+    elif prod_key.startswith("prem_"):
+        info = PREMIUM_NAMES_I18N.get(prod_key, {})
+        p_name = info.get(lang(user_id), info.get("uz", product.get("title", "")))
+        prod_formatted = f"{custom_tag(prod_key)}<b>{p_name}</b> - {money(product['price'])} {c_unit}"
+    else:
+        prod_formatted = f"{custom_tag('stars')}<b>{product.get('count', '')} Stars</b> - {money(product['price'])} {c_unit}"
+
     if get_balance(user_id) < product["price"]:
         builder = InlineKeyboardBuilder()
         builder.row(p_btn(tr(user_id, "deposit"), "deposit", "deposit", style="success"))
         builder.row(p_btn(tr(user_id, "back"), "back_main", "back"))
 
-        await callback.message.edit_text(
-            f"<blockquote>⚠️ <b>Hisobingizda mablag' yetarli emas.</b>\n\n"
-            f"<b>Mahsulot:</b> {product['formatted']}\n"
-            f"<b>Narxi:</b> {money(product['price'])} so'm\n"
-            f"Balansingiz: <b>{money(get_balance(user_id))} so'm</b></blockquote>",
-            reply_markup=builder.as_markup()
-        )
+        if is_ru:
+            insuf_text = (
+                f"<blockquote>⚠️ <b>На вашем счете недостаточно средств.</b>\n\n"
+                f"<b>Товар:</b> {prod_formatted}\n"
+                f"<b>Цена:</b> {money(product['price'])} {c_unit}\n"
+                f"Ваш баланс: <b>{money(get_balance(user_id))} {c_unit}</b></blockquote>"
+            )
+        else:
+            insuf_text = (
+                f"<blockquote>⚠️ <b>Hisobingizda mablag' yetarli emas.</b>\n\n"
+                f"<b>Mahsulot:</b> {prod_formatted}\n"
+                f"<b>Narxi:</b> {money(product['price'])} {c_unit}\n"
+                f"Balansingiz: <b>{money(get_balance(user_id))} {c_unit}</b></blockquote>"
+            )
+        await callback.message.edit_text(insuf_text, reply_markup=builder.as_markup())
         await callback.answer()
         return
 
-    await state.update_data(prod_key=prod_key, product=product)
+    product_localized = dict(product)
+    product_localized["formatted"] = prod_formatted
+    await state.update_data(prod_key=prod_key, product=product_localized)
 
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn("O'zimning profilimga", "target_self", "profile", style="success"))
-    builder.row(p_btn("Boshqa profilga", "target_other", "target_other", style="primary"))
+    builder.row(p_btn(tr(user_id, "target_self"), "target_self", "profile", style="success"))
+    builder.row(p_btn(tr(user_id, "target_other"), "target_other", "target_other", style="primary"))
     builder.row(p_btn(tr(user_id, "back"), "back_main", "back"))
 
-    text = (
-        f"<blockquote><b>Mahsulot:</b> {product['formatted']}\n"
-        f"<b>Narxi:</b> {money(product['price'])} so'm\n\n"
-        "Qaysi profilga olmoqchisiz?</blockquote>"
-    )
+    if is_ru:
+        text = (
+            f"<blockquote><b>Товар:</b> {prod_formatted}\n"
+            f"<b>Цена:</b> {money(product['price'])} {c_unit}\n\n"
+            "На какой профиль хотите оформить?</blockquote>"
+        )
+    else:
+        text = (
+            f"<blockquote><b>Mahsulot:</b> {prod_formatted}\n"
+            f"<b>Narxi:</b> {money(product['price'])} {c_unit}\n\n"
+            "Qaysi profilga olmoqchisiz?</blockquote>"
+        )
     await callback.message.edit_text(text, reply_markup=builder.as_markup())
     await callback.answer()
 
@@ -4126,36 +4359,55 @@ async def target_self_handler(callback: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query(F.data == "target_other")
 async def target_other_handler(callback: types.CallbackQuery, state: FSMContext):
-    await callback.message.edit_text(
-        "<blockquote><b>Boshqa profilga yuborish</b>\n\nFoydalanuvchi username'ini yuboring:\n(Masalan: @username yoki username)</blockquote>",
-        reply_markup=back_main_keyboard(callback.from_user.id)
-    )
+    uid = callback.from_user.id
+    if lang(uid) == "ru":
+        text = (
+            "<blockquote><b>Отправить на другой профиль</b>\n\n"
+            "Отправьте username пользователя:\n(Например: @username или username)</blockquote>"
+        )
+    else:
+        text = (
+            "<blockquote><b>Boshqa profilga yuborish</b>\n\n"
+            "Foydalanuvchi username'ini yuboring:\n(Masalan: @username yoki username)</blockquote>"
+        )
+    await callback.message.edit_text(text, reply_markup=back_main_keyboard(uid))
     await state.set_state(BuyState.waiting_for_target)
     await callback.answer()
 
 
 @dp.message(BuyState.waiting_for_target)
 async def process_target_username(message: types.Message, state: FSMContext):
+    uid = message.from_user.id
     raw_text = (message.text or "").strip()
+    is_ru = (lang(uid) == "ru")
 
     if not raw_text:
-        msg = await message.answer("<blockquote>⚠️ Iltimos, foydalanuvchi username'ini yuboring!</blockquote>")
+        err_text = "<blockquote>⚠️ Пожалуйста, отправьте username пользователя!</blockquote>" if is_ru else "<blockquote>⚠️ Iltimos, foydalanuvchi username'ini yuboring!</blockquote>"
+        msg = await message.answer(err_text)
         await asyncio.sleep(2)
         await safe_delete(msg)
         return
 
-    wait_msg = await message.answer("🔍 <i>Foydalanuvchi profili Telegramdan tekshirilmoqda...</i>")
+    wait_text = "🔍 <i>Профиль проверяется в Telegram...</i>" if is_ru else "🔍 <i>Foydalanuvchi profili Telegramdan tekshirilmoqda...</i>"
+    wait_msg = await message.answer(wait_text)
 
     exists, name, formatted_target = await check_telegram_username(raw_text)
     await safe_delete(wait_msg)
 
     if not exists:
-        await message.answer(
-            "<blockquote>❌ <b>Bunday profil Telegramda topilmadi!</b>\n\n"
-            "Iltimos, username to'g'ri yozilganini tekshirib, mavjud username yuboring:\n"
-            "(Masalan: @username yoki username)</blockquote>",
-            reply_markup=back_main_keyboard(message.from_user.id)
-        )
+        if is_ru:
+            not_found = (
+                "<blockquote>❌ <b>Такой профиль не найден в Telegram!</b>\n\n"
+                "Пожалуйста, убедитесь в правильности username и отправьте существующий:\n"
+                "(Например: @username или username)</blockquote>"
+            )
+        else:
+            not_found = (
+                "<blockquote>❌ <b>Bunday profil Telegramda topilmadi!</b>\n\n"
+                "Iltimos, username to'g'ri yozilganini tekshirib, mavjud username yuboring:\n"
+                "(Masalan: @username yoki username)</blockquote>"
+            )
+        await message.answer(not_found, reply_markup=back_main_keyboard(uid))
         return
 
     display_target = f"{formatted_target} ({name})" if name and name != formatted_target and not formatted_target.startswith("ID:") else formatted_target
@@ -4171,26 +4423,40 @@ async def confirm_purchase_menu(callback: types.CallbackQuery, state: FSMContext
     data = await state.get_data()
     product = data.get("product")
     target_display = data.get("target_display") or data.get("target")
+    uid = callback.from_user.id
+    c_unit = curr(uid)
+    is_ru = (lang(uid) == "ru")
 
     if not product or not target_display:
-        await callback.answer("❌ Ma'lumot topilmadi.", show_alert=True)
+        err_txt = "❌ Данные не найдены." if is_ru else "❌ Ma'lumot topilmadi."
+        await callback.answer(err_txt, show_alert=True)
         return
 
     prod_key = data.get("prod_key", "")
     prod_name = product.get("name", "").lower()
-    is_admin_premium = prod_key in ["prem_1", "prem_12"] or "kirib" in prod_name or "1 oylik" in prod_name
-    admin_note = "\n\nℹ️ <i>To'lov balansingizdan yechilgach, akkauntga kirib berish uchun adminga bog'lanasiz.</i>" if is_admin_premium else ""
+    is_admin_premium = prod_key in ["prem_1", "prem_12"] or "kirib" in prod_name or "1 oylik" in prod_name or "вход" in prod_name
+
+    if is_ru:
+        admin_note = "\n\nℹ️ <i>После списания средств свяжитесь с админом для активации с входом в аккаунт.</i>" if is_admin_premium else ""
+        text = (
+            f"<blockquote><b>Подтвердите покупку:</b>\n\n"
+            f"<b>Товар:</b> {product['formatted']}\n"
+            f"<b>Цена:</b> {money(product['price'])} {c_unit}\n"
+            f"<b>Получатель:</b> {target_display}{admin_note}</blockquote>"
+        )
+    else:
+        admin_note = "\n\nℹ️ <i>To'lov balansingizdan yechilgach, akkauntga kirib berish uchun adminga bog'lanasiz.</i>" if is_admin_premium else ""
+        text = (
+            f"<blockquote><b>Xaridni tasdiqlang:</b>\n\n"
+            f"<b>Mahsulot:</b> {product['formatted']}\n"
+            f"<b>Narxi:</b> {money(product['price'])} {c_unit}\n"
+            f"<b>Qabul qiluvchi:</b> {target_display}{admin_note}</blockquote>"
+        )
 
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn("Xaridni tasdiqlash", "confirm_buy", "confirm_buy", style="success"))
-    builder.row(p_btn("Bekor qilish", "cancel", "cancel", style="danger"))
+    builder.row(p_btn(tr(uid, "confirm_buy"), "confirm_buy", "confirm_buy", style="success"))
+    builder.row(p_btn(tr(uid, "cancel"), "cancel", "cancel", style="danger"))
 
-    text = (
-        f"<blockquote><b>Xaridni tasdiqlang:</b>\n\n"
-        f"<b>Mahsulot:</b> {product['formatted']}\n"
-        f"<b>Narxi:</b> {money(product['price'])} so'm\n"
-        f"<b>Qabul qiluvchi:</b> {target_display}{admin_note}</blockquote>"
-    )
     await callback.message.edit_text(text, reply_markup=builder.as_markup())
     await callback.answer()
 
@@ -4199,27 +4465,41 @@ async def confirm_purchase_menu_msg(message: types.Message, state: FSMContext):
     data = await state.get_data()
     product = data.get("product")
     target_display = data.get("target_display") or data.get("target")
+    uid = message.from_user.id
+    c_unit = curr(uid)
+    is_ru = (lang(uid) == "ru")
 
     if not product or not target_display:
         await state.clear()
-        await message.answer("❌ Ma'lumot topilmadi.", reply_markup=back_main_keyboard(message.from_user.id))
+        err_txt = "❌ Данные не найдены." if is_ru else "❌ Ma'lumot topilmadi."
+        await message.answer(err_txt, reply_markup=back_main_keyboard(uid))
         return
 
     prod_key = data.get("prod_key", "")
     prod_name = product.get("name", "").lower()
-    is_admin_premium = prod_key in ["prem_1", "prem_12"] or "kirib" in prod_name or "1 oylik" in prod_name
-    admin_note = "\n\nℹ️ <i>To'lov balansingizdan yechilgach, akkauntga kirib berish uchun adminga bog'lanasiz.</i>" if is_admin_premium else ""
+    is_admin_premium = prod_key in ["prem_1", "prem_12"] or "kirib" in prod_name or "1 oylik" in prod_name or "вход" in prod_name
+
+    if is_ru:
+        admin_note = "\n\nℹ️ <i>После списания средств свяжитесь с админом для активации с входом в аккаунт.</i>" if is_admin_premium else ""
+        text = (
+            f"<blockquote><b>Подтвердите покупку:</b>\n\n"
+            f"<b>Товар:</b> {product['formatted']}\n"
+            f"<b>Цена:</b> {money(product['price'])} {c_unit}\n"
+            f"<b>Получатель:</b> {target_display}{admin_note}</blockquote>"
+        )
+    else:
+        admin_note = "\n\nℹ️ <i>To'lov balansingizdan yechilgach, akkauntga kirib berish uchun adminga bog'lanasiz.</i>" if is_admin_premium else ""
+        text = (
+            f"<blockquote><b>Xaridni tasdiqlang:</b>\n\n"
+            f"<b>Mahsulot:</b> {product['formatted']}\n"
+            f"<b>Narxi:</b> {money(product['price'])} {c_unit}\n"
+            f"<b>Qabul qiluvchi:</b> {target_display}{admin_note}</blockquote>"
+        )
 
     builder = InlineKeyboardBuilder()
-    builder.row(p_btn("Xaridni tasdiqlash", "confirm_buy", "confirm_buy", style="success"))
-    builder.row(p_btn("Bekor qilish", "cancel", "cancel", style="danger"))
+    builder.row(p_btn(tr(uid, "confirm_buy"), "confirm_buy", "confirm_buy", style="success"))
+    builder.row(p_btn(tr(uid, "cancel"), "cancel", "cancel", style="danger"))
 
-    text = (
-        f"<blockquote><b>Xaridni tasdiqlang:</b>\n\n"
-        f"<b>Mahsulot:</b> {product['formatted']}\n"
-        f"<b>Narxi:</b> {money(product['price'])} so'm\n"
-        f"<b>Qabul qiluvchi:</b> {target_display}{admin_note}</blockquote>"
-    )
     await delete_previous_menu(message.from_user.id)
     msg = await message.answer(text, reply_markup=builder.as_markup())
     last_menu_messages[message.from_user.id] = msg.message_id
@@ -4228,6 +4508,8 @@ async def confirm_purchase_menu_msg(message: types.Message, state: FSMContext):
 @dp.callback_query(F.data == "confirm_buy")
 async def execute_purchase(callback: types.CallbackQuery, state: FSMContext):
     user_id = callback.from_user.id
+    c_unit = curr(user_id)
+    is_ru = (lang(user_id) == "ru")
     data = await state.get_data()
     product = data.get("product")
     target = data.get("target")
@@ -4235,12 +4517,14 @@ async def execute_purchase(callback: types.CallbackQuery, state: FSMContext):
     prod_key = data.get("prod_key", "")
 
     if not product or not target:
-        await callback.answer("❌ Xatolik yuz berdi. Qaytadan urinib ko'ring!", show_alert=True)
+        err_txt = "❌ Произошла ошибка. Попробуйте снова!" if is_ru else "❌ Xatolik yuz berdi. Qaytadan urinib ko'ring!"
+        await callback.answer(err_txt, show_alert=True)
         return
 
     price = int(product["price"])
     if get_balance(user_id) < price:
-        await callback.answer("❌ Hisobingizda yetarli mablag' yo'q!", show_alert=True)
+        err_txt = "❌ На вашем счете недостаточно средств!" if is_ru else "❌ Hisobingizda yetarli mablag' yo'q!"
+        await callback.answer(err_txt, show_alert=True)
         return
 
     update_balance(user_id, -price)
