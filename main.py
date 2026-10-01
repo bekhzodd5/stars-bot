@@ -517,11 +517,13 @@ withdraw_requests = db.get("withdraw_requests", {})
 
 last_menu_messages = {}
 payment_expiry_tasks = {}
+active_auto_poll_tasks = {}
 
 
 class DepositState(StatesGroup):
     waiting_for_amount = State()
     waiting_for_receipt = State()
+    waiting_for_auto_receipt = State()
 
 class BuyState(StatesGroup):
     waiting_for_target = State()
@@ -1028,9 +1030,15 @@ def get_main_inline_menu(user_id=None):
     return builder.as_markup()
 
 def get_bottom_reply_keyboard(user_id=0):
+    eid = menu_emojis.get("refresh") or DEFAULT_MENU_EMOJIS.get("refresh")
+    text = "Yangilash" if lang(user_id) == "uz" else "Обновить"
+    kwargs = {"text": text, "style": "primary"}
+    if eid:
+        kwargs["icon_custom_emoji_id"] = eid
+    btn = types.KeyboardButton(**kwargs)
     builder = ReplyKeyboardBuilder()
-    builder.row(types.KeyboardButton(text=tr(user_id, "refresh")))
-    return builder.as_markup(resize_keyboard=True)
+    builder.row(btn)
+    return builder.as_markup(resize_keyboard=True, is_persistent=True)
 
 def main_menu_text(user_id=0):
     title = editable_text("main_title", tr(user_id, "main_title"), user_id)
@@ -2117,6 +2125,12 @@ async def start_cmd(message: types.Message, command: CommandObject, state: FSMCo
         last_menu_messages[user_id] = msg.message_id
         return
 
+    # Pastki doimiy reply klaviaturani (Yangilash) darhol biriktirish
+    await message.answer(
+        f"<blockquote>{custom_tag('main_title')}<b>Star Market Uz</b> botiga xush kelibsiz!</blockquote>",
+        reply_markup=get_bottom_reply_keyboard(user_id)
+    )
+
     msg = await message.answer(
         main_menu_text(user_id),
         reply_markup=get_main_inline_menu(user_id)
@@ -2159,7 +2173,7 @@ async def referral_contact_handler(message: types.Message, state: FSMContext):
     last_menu_messages[uid] = msg.message_id
 
 
-@dp.message(F.text.in_({"Yangilash", "Обновить", "🔄 Yangilash", "🔄 Обновить"}))
+@dp.message(F.text.func(lambda t: bool(t and any(w in t.lower() for w in ["yangilash", "обновить"]))))
 async def bottom_refresh_handler(message: types.Message, state: FSMContext):
     await state.clear()
     user_id = message.from_user.id
@@ -2503,6 +2517,93 @@ async def cancel_user_payment_if_any(user_id):
     save_data()
 
 
+async def poll_auto_payment(token: str, user_id: int, amount: int, message_id: int):
+    """PayHamyon to'lovini orqa fonda 15 daqiqa davomida har 5 soniyada avto-tekshirish"""
+    max_checks = 180  # 15 daqiqa davomida (180 * 5s = 900s)
+    for _ in range(max_checks):
+        await asyncio.sleep(5)
+        payment = pending_auto_payments.get(token)
+        if not payment or payment.get("status") != "pending":
+            break
+
+        try:
+            res = await async_check_payment(token)
+        except Exception as e:
+            logging.error(f"Auto-poll error for token {token}: {e}")
+            continue
+
+        is_paid = False
+        if res.get("success"):
+            status_val = str(res.get("status", "")).lower()
+            if status_val in ["paid", "completed", "success", "1", 1] or res.get("paid") is True or res.get("is_paid") is True:
+                is_paid = True
+            elif isinstance(res.get("data"), dict):
+                sub_status = str(res["data"].get("status", "")).lower()
+                if sub_status in ["paid", "completed", "success", "1", 1] or res["data"].get("paid") is True:
+                    is_paid = True
+
+        if is_paid:
+            active_auto_poll_tasks.pop(token, None)
+            payment["status"] = "paid"
+            payment["paid_at"] = datetime.now().isoformat()
+            update_balance(user_id, amount)
+            save_data()
+
+            success_text = (
+                f"<blockquote>{custom_tag('deposit')}✅ <b>To'lov muvaffaqiyatli qabul qilindi!</b>\n\n"
+                f"Hisobingizga <b>+{money(amount)} so'm</b> avtomatik tarzda qo'shildi!\n"
+                f"Joriy balansingiz: <b>{money(get_balance(user_id))} so'm</b></blockquote>"
+            )
+            b = InlineKeyboardBuilder()
+            b.row(p_btn("🏠 Asosiy menyu", "back_main", "back"))
+
+            try:
+                await bot.edit_message_text(
+                    chat_id=user_id,
+                    message_id=message_id,
+                    text=success_text,
+                    reply_markup=b.as_markup()
+                )
+            except Exception:
+                try:
+                    await bot.send_message(
+                        chat_id=user_id,
+                        text=success_text,
+                        reply_markup=b.as_markup()
+                    )
+                except Exception:
+                    pass
+
+            admin_text = (
+                f"<blockquote>⚡️ <b>Yangi Avto To'lov (PayHamyon)!</b>\n\n"
+                f"Foydalanuvchi ID: <code>{user_id}</code>\n"
+                f"Summa: <b>{money(amount)} so'm</b>\n"
+                f"Token: <code>{token}</code>\n"
+                f"Holat: ✅ Avtomatik to'lov hisobga o'tdi</blockquote>"
+            )
+            try:
+                await bot.send_message(chat_id=ADMIN_ID, text=admin_text)
+            except Exception:
+                pass
+            break
+
+        status_val = str(res.get("status", "")).lower()
+        if status_val in ["canceled", "cancelled", "expired", "failed"]:
+            active_auto_poll_tasks.pop(token, None)
+            payment["status"] = "cancelled"
+            save_data()
+            try:
+                await bot.edit_message_text(
+                    chat_id=user_id,
+                    message_id=message_id,
+                    text="<blockquote>❌ <b>To'lov muddati tugagan yoki bekor qilingan.</b></blockquote>",
+                    reply_markup=back_main_keyboard(user_id)
+                )
+            except Exception:
+                pass
+            break
+
+
 @dp.callback_query(F.data == "deposit")
 async def deposit_start(callback: types.CallbackQuery, state: FSMContext):
     uid = callback.from_user.id
@@ -2584,17 +2685,26 @@ async def process_deposit_amount(message: types.Message, state: FSMContext):
         f"🧾 <b>To'lov Tokeni:</b> <code>{token}</code>\n\n"
         f"⚠️ <b>MUHIM KO'RSATMA:</b>\n"
         f"1. Yuqoridagi kartaga aynan <b>{money(pay_amount)} so'm</b> o'tkazing.\n"
-        f"2. To'lovni amalga oshirgach, pastdagi <b>🔄 To'lovni tekshirish</b> tugmasini bosing.\n"
-        f"3. Balansingiz darhol avtomatik tarzda to'ldiriladi!\n\n"
+        f"2. Pul o'tkazishingiz bilan tizim uni <b>avtomatik tarzda</b> hisobingizga qo'shadi!\n"
+        f"3. Zarur bo'lsa, pastdagi <b>🔄 To'lovni tekshirish</b> tugmasini bosishingiz mumkin.\n"
+        f"4. Agar pul o'tkazgan bo'lsangiz-u, avto tushmasa, <b>🧾 Chek yuborish</b> tugmasini bosing.\n\n"
         f"⏱ <i>Ushbu to'lov oynasi 15 daqiqa davomida amal qiladi.</i></blockquote>"
     )
 
     b = InlineKeyboardBuilder()
-    b.row(p_btn("🔄 To'lovni tekshirish", f"check_auto_{token}", "check_btn", style="success"))
+    b.row(
+        p_btn("🔄 To'lovni tekshirish", f"check_auto_{token}", "check_btn", style="success"),
+        p_btn("🧾 Chek yuborish", f"send_auto_receipt_{token}", "deposit", style="primary")
+    )
     b.row(p_btn("❌ Bekor qilish", f"cancel_auto_{token}", "cancel", style="danger"))
 
     await status_msg.edit_text(auto_card_text, reply_markup=b.as_markup())
     last_menu_messages[user_id] = status_msg.message_id
+
+    # Orqa fonda avtomatik tekshirishni ishga tushirish
+    active_auto_poll_tasks[token] = asyncio.create_task(
+        poll_auto_payment(token, user_id, amount, status_msg.message_id)
+    )
 
 
 # ------------------------------------------------------------------------------
@@ -2648,21 +2758,31 @@ async def start_auto_payment(callback: types.CallbackQuery, state: FSMContext):
     auto_card_text = (
         f"<blockquote>{custom_tag('deposit')}⚡️ <b>Avto to'lov (PayHamyon)</b>\n\n"
         f"💳 <b>Karta raqami:</b> <code>{card}</code>\n"
+        f"👤 <b>Karta egasi:</b> {PAYMENT_CARD_OWNER}\n"
         f"💵 <b>To'lov summasi:</b> <code>{money(pay_amount)}</code> so'm\n"
         f"🧾 <b>To'lov Tokeni:</b> <code>{token}</code>\n\n"
         f"⚠️ <b>MUHIM KO'RSATMA:</b>\n"
         f"1. Yuqoridagi kartaga aynan <b>{money(pay_amount)} so'm</b> o'tkazing.\n"
-        f"2. To'lovni amalga oshirgach, pastdagi <b>🔄 To'lovni tekshirish</b> tugmasini bosing.\n"
-        f"3. Balansingiz darhol avtomatik tarzda to'ldiriladi!\n\n"
+        f"2. Pul o'tkazishingiz bilan tizim uni <b>avtomatik tarzda</b> hisobingizga qo'shadi!\n"
+        f"3. Zarur bo'lsa, pastdagi <b>🔄 To'lovni tekshirish</b> tugmasini bosishingiz mumkin.\n"
+        f"4. Agar pul o'tkazgan bo'lsangiz-u, avto tushmasa, <b>🧾 Chek yuborish</b> tugmasini bosing.\n\n"
         f"⏱ <i>Ushbu to'lov oynasi 15 daqiqa davomida amal qiladi.</i></blockquote>"
     )
 
     b = InlineKeyboardBuilder()
-    b.row(p_btn("🔄 To'lovni tekshirish", f"check_auto_{token}", "check_btn", style="success"))
+    b.row(
+        p_btn("🔄 To'lovni tekshirish", f"check_auto_{token}", "check_btn", style="success"),
+        p_btn("🧾 Chek yuborish", f"send_auto_receipt_{token}", "deposit", style="primary")
+    )
     b.row(p_btn("❌ Bekor qilish", f"cancel_auto_{token}", "cancel", style="danger"))
 
     await callback.message.edit_text(auto_card_text, reply_markup=b.as_markup())
     await callback.answer()
+
+    # Orqa fonda avtomatik tekshirishni ishga tushirish
+    active_auto_poll_tasks[token] = asyncio.create_task(
+        poll_auto_payment(token, user_id, amount, callback.message.message_id)
+    )
 
 
 @dp.callback_query(F.data.startswith("check_auto_"))
@@ -2681,8 +2801,6 @@ async def check_auto_payment_handler(callback: types.CallbackQuery):
     user_id = payment["user_id"]
     amount = payment["amount"]
 
-    await callback.answer("⏳ To'lov tekshirilmoqda...")
-
     # API orqali tekshirish
     res = await async_check_payment(token)
 
@@ -2697,7 +2815,10 @@ async def check_auto_payment_handler(callback: types.CallbackQuery):
                 is_paid = True
 
     if is_paid:
-        # To'lov tasdiqlandi!
+        task = active_auto_poll_tasks.pop(token, None)
+        if task:
+            task.cancel()
+
         payment["status"] = "paid"
         payment["paid_at"] = datetime.now().isoformat()
         update_balance(user_id, amount)
@@ -2720,26 +2841,32 @@ async def check_auto_payment_handler(callback: types.CallbackQuery):
             f"ID: <code>{user_id}</code>\n"
             f"Summa: <b>{money(amount)} so'm</b>\n"
             f"Token: <code>{token}</code>\n"
-            f"Holat: ✅ Avtomatik tasdiqlandi</blockquote>"
+            f"Holat: ✅ Foydalanuvchi tekshiruvida tasdiqlandi</blockquote>"
         )
         try:
             await bot.send_message(chat_id=ADMIN_ID, text=admin_text)
         except Exception:
             pass
+        await callback.answer("✅ To'lov qabul qilindi!")
 
     else:
-        err = res.get("error", "")
-        status_val = res.get("status")
+        status_val = str(res.get("status", "")).lower()
         if status_val in ["canceled", "cancelled", "expired", "failed"]:
+            task = active_auto_poll_tasks.pop(token, None)
+            if task:
+                task.cancel()
             payment["status"] = "cancelled"
             save_data()
             await callback.message.edit_text(
                 "<blockquote>❌ <b>To'lov muddati tugagan yoki bekor qilingan.</b></blockquote>",
                 reply_markup=back_main_keyboard(user_id)
             )
+            await callback.answer("To'lov muddati tugagan yoki bekor qilingan.")
         else:
             await callback.answer(
-                "⏳ To'lov hali tasdiqlanmadi!\n\nIltimos, kartaga to'lovni to'liq o'tkazganingizga ishonch hosil qiling va 10-15 soniyadan so'ng qayta tekshiring.",
+                "❌ To'lov hali hisobga tushmagan!\n\n"
+                "Iltimos, kartaga pul to'liq o'tkazilganiga ishonch hosil qiling va biroz kuting.\n"
+                "Agar to'lov qilgan bo'lsangiz-u, avto tushmayotgan bo'lsa, '🧾 Chek yuborish' tugmasini bosing.",
                 show_alert=True
             )
 
@@ -2747,8 +2874,11 @@ async def check_auto_payment_handler(callback: types.CallbackQuery):
 @dp.callback_query(F.data.startswith("cancel_auto_"))
 async def cancel_auto_payment_handler(callback: types.CallbackQuery):
     token = callback.data.replace("cancel_auto_", "")
-    payment = pending_auto_payments.get(token)
+    task = active_auto_poll_tasks.pop(token, None)
+    if task:
+        task.cancel()
 
+    payment = pending_auto_payments.get(token)
     if payment:
         payment["status"] = "cancelled"
         save_data()
@@ -2763,6 +2893,190 @@ async def cancel_auto_payment_handler(callback: types.CallbackQuery):
         reply_markup=get_main_inline_menu(callback.from_user.id)
     )
     await callback.answer("To'lov bekor qilindi.")
+
+
+@dp.callback_query(F.data.startswith("send_auto_receipt_"))
+async def send_auto_receipt_start(callback: types.CallbackQuery, state: FSMContext):
+    token = callback.data.replace("send_auto_receipt_", "")
+    payment = pending_auto_payments.get(token)
+    user_id = callback.from_user.id
+
+    if not payment:
+        await callback.answer("❌ Bu to'lov topilmadi yoki muddati o'tgan.", show_alert=True)
+        return
+    if payment.get("status") == "paid":
+        await callback.answer("✅ Bu to'lov allaqachon hisobingizga tushirilgan!", show_alert=True)
+        return
+
+    await state.update_data(auto_token=token)
+    await state.set_state(DepositState.waiting_for_auto_receipt)
+
+    text = (
+        f"<blockquote>{custom_tag('deposit')}🧾 <b>To'lov chekini adminga yuborish</b>\n\n"
+        f"To'lov summasi: <b>{money(payment['amount'])} so'm</b>\n"
+        f"Token: <code>{token}</code>\n\n"
+        f"Iltimos, kartaga pul o'tkazganingizni tasdiqlovchi <b>chek rasmini (screenshot)</b> yuboring.\n\n"
+        f"Admin to'lovni tekshirib, balansingizni to'ldirib beradi.</blockquote>"
+    )
+    b = InlineKeyboardBuilder()
+    b.row(p_btn("❌ Bekor qilish", f"cancel_auto_{token}", "cancel", style="danger"))
+
+    await callback.message.edit_text(text, reply_markup=b.as_markup())
+    await callback.answer()
+
+
+@dp.message(DepositState.waiting_for_auto_receipt)
+async def process_auto_deposit_receipt(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    token = data.get("auto_token")
+    payment = pending_auto_payments.get(token)
+    user_id = message.from_user.id
+
+    if not payment or payment.get("user_id") != user_id:
+        await state.clear()
+        await message.answer("<blockquote>❌ To'lov topilmadi yoki bekor qilingan.</blockquote>", reply_markup=back_main_keyboard(user_id))
+        return
+
+    if not message.photo:
+        msg = await message.answer("<blockquote>⚠️ Iltimos, to'lov chekini <b>rasm (screenshot)</b> ko'rinishida yuboring!</blockquote>")
+        await asyncio.sleep(2)
+        await safe_delete(msg)
+        return
+
+    payment["status"] = "waiting_admin"
+    payment["receipt_photo_id"] = message.photo[-1].file_id
+    save_data()
+
+    # Avto-tekshiruv fon vazifasini to'xtatish
+    poll_task = active_auto_poll_tasks.pop(token, None)
+    if poll_task:
+        poll_task.cancel()
+
+    amount = payment["amount"]
+
+    admin_builder = InlineKeyboardBuilder()
+    admin_builder.row(
+        p_btn(f"✅ Tasdiqlash (+{money(amount)})", f"adm_appr_auto_{token}", "check_btn", style="success")
+    )
+    admin_builder.row(
+        p_btn("❌ Rad etish", f"adm_rej_auto_{token}", "cancel", style="danger")
+    )
+
+    caption = (
+        f"<blockquote>🧾 <b>Avto-to'lov tushmagan (Chek yuborildi):</b>\n\n"
+        f"👤 <b>Foydalanuvchi:</b> <a href='tg://user?id={user_id}'>{message.from_user.full_name}</a> (@{message.from_user.username or 'yoq'})\n"
+        f"🆔 <b>ID:</b> <code>{user_id}</code>\n"
+        f"💵 <b>Summa:</b> <b>{money(amount)} so'm</b>\n"
+        f"💳 <b>Karta:</b> <code>{payment.get('card', PAYMENT_CARD)}</code>\n"
+        f"🧾 <b>Token:</b> <code>{token}</code>\n"
+        f"⏰ <b>Vaqt:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+        f"<i>To'lovni tasdiqlaysizmi?</i></blockquote>"
+    )
+
+    try:
+        await bot.send_photo(
+            chat_id=ADMIN_ID,
+            photo=message.photo[-1].file_id,
+            caption=caption,
+            reply_markup=admin_builder.as_markup()
+        )
+    except Exception as e:
+        logging.error(f"Failed to send auto receipt to admin: {e}")
+
+    await state.clear()
+    await delete_previous_menu(user_id)
+    msg = await message.answer(
+        f"<blockquote>{custom_tag('deposit')}✅ <b>To'lov chekingiz adminga yuborildi!</b>\n\n"
+        f"Summa: <b>{money(amount)} so'm</b>\n"
+        f"Token: <code>{token}</code>\n\n"
+        f"Admin chekni tekshirgach, hisobingizga pul qo'shiladi va sizga xabar beriladi.</blockquote>",
+        reply_markup=get_main_inline_menu(user_id)
+    )
+    last_menu_messages[user_id] = msg.message_id
+
+
+@dp.callback_query(F.data.startswith("adm_appr_auto_"))
+async def admin_approve_auto_receipt(callback: types.CallbackQuery):
+    token = callback.data.replace("adm_appr_auto_", "")
+    payment = pending_auto_payments.get(token)
+
+    if not payment:
+        await callback.answer("❌ Bu to'lov topilmadi.", show_alert=True)
+        return
+
+    if payment.get("status") == "paid":
+        await callback.answer("⚠️ Bu to'lov allaqachon tasdiqlangan!", show_alert=True)
+        return
+
+    user_id = payment["user_id"]
+    amount = payment["amount"]
+
+    payment["status"] = "paid"
+    payment["approved_by"] = "admin"
+    payment["approved_at"] = datetime.now().isoformat()
+    update_balance(user_id, amount)
+    save_data()
+
+    await callback.answer("✅ To'lov tasdiqlandi!")
+    try:
+        await callback.message.edit_caption(
+            caption=(callback.message.caption or "") + "\n\n✅ <b>ADMIN TOMONIDAN TASDIQLANDI VA PUL TUSHIRILDI!</b>",
+            reply_markup=None
+        )
+    except Exception:
+        pass
+
+    try:
+        await bot.send_message(
+            chat_id=user_id,
+            text=(
+                f"<blockquote>{custom_tag('deposit')}✅ <b>To'lov chekingiz admin tomonidan tasdiqlandi!</b>\n\n"
+                f"Hisobingizga <b>+{money(amount)} so'm</b> qo'shildi!\n"
+                f"Joriy balansingiz: <b>{money(get_balance(user_id))} so'm</b></blockquote>"
+            ),
+            reply_markup=get_main_inline_menu(user_id)
+        )
+    except Exception:
+        pass
+
+
+@dp.callback_query(F.data.startswith("adm_rej_auto_"))
+async def admin_reject_auto_receipt(callback: types.CallbackQuery):
+    token = callback.data.replace("adm_rej_auto_", "")
+    payment = pending_auto_payments.get(token)
+
+    if not payment:
+        await callback.answer("❌ Bu to'lov topilmadi.", show_alert=True)
+        return
+
+    if payment.get("status") == "paid":
+        await callback.answer("⚠️ Bu to'lov allaqachon tasdiqlangan, rad etib bo'lmaydi!", show_alert=True)
+        return
+
+    payment["status"] = "rejected"
+    save_data()
+
+    await callback.answer("❌ To'lov rad etildi.")
+    try:
+        await callback.message.edit_caption(
+            caption=(callback.message.caption or "") + "\n\n❌ <b>ADMIN TOMONIDAN RAD ETILDI!</b>",
+            reply_markup=None
+        )
+    except Exception:
+        pass
+
+    user_id = payment["user_id"]
+    try:
+        await bot.send_message(
+            chat_id=user_id,
+            text=(
+                f"<blockquote>{custom_tag('deposit')}❌ <b>To'lov chekingiz admin tomonidan rad etildi!</b>\n\n"
+                f"Iltimos, agar xatolik deb hisoblasangiz adminga ({ADMIN_USERNAME}) murojaat qiling.</blockquote>"
+            ),
+            reply_markup=get_main_inline_menu(user_id)
+        )
+    except Exception:
+        pass
 
 
 # ------------------------------------------------------------------------------
@@ -3439,6 +3753,77 @@ async def legacy_sell_reject(call: types.CallbackQuery):
     await admin_sell_reject(call)
 
 
+def sync_order_status_to_all_dbs(order_id: str, status: str, user_id: str = None, new_bal: int = None):
+    """Barcha mavjud database.json va bot_database.json fayllarida buyurtma statusini yangilash"""
+    clean_id = str(order_id).replace("#", "").strip()
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    candidate_paths = [
+        r"C:\Users\User\Desktop\wep app\data\database.json",
+        r"C:\Users\User\Desktop\stars bot\data\database.json",
+        os.path.join(base_dir, "data", "database.json"),
+        os.path.join(base_dir, "..", "wep app", "data", "database.json"),
+        os.path.join("data", "database.json"),
+        r"C:\Users\User\Desktop\wep app\bot_database.json",
+        r"C:\Users\User\Desktop\stars bot\bot_database.json",
+        os.path.join(base_dir, "bot_database.json"),
+        "bot_database.json"
+    ]
+    seen = set()
+    found_tx = None
+
+    for p in candidate_paths:
+        abs_p = os.path.abspath(p)
+        if abs_p in seen or not os.path.exists(abs_p):
+            continue
+        seen.add(abs_p)
+
+        try:
+            with open(abs_p, "r", encoding="utf-8") as f:
+                d = json.load(f)
+            changed = False
+
+            # 1. Check transactions array (webapp database.json)
+            if "transactions" in d and isinstance(d["transactions"], list):
+                for tx in d["transactions"]:
+                    if tx.get("id") in [clean_id, f"#{clean_id}"]:
+                        tx["status"] = status
+                        changed = True
+                        if not found_tx:
+                            found_tx = dict(tx)
+                if user_id and new_bal is not None and "users" in d and str(user_id) in d["users"]:
+                    d["users"][str(user_id)]["balance"] = new_bal
+                    changed = True
+
+            # 2. Check active_orders dict (bot_database.json)
+            if "active_orders" in d and isinstance(d["active_orders"], dict):
+                for k in [clean_id, f"#{clean_id}"]:
+                    if k in d["active_orders"]:
+                        if isinstance(d["active_orders"][k], dict):
+                            d["active_orders"][k]["status"] = status
+                            changed = True
+                            if not found_tx:
+                                found_tx = dict(d["active_orders"][k])
+
+            if changed:
+                with open(abs_p, "w", encoding="utf-8") as f:
+                    json.dump(d, f, indent=2, ensure_ascii=False)
+                logging.info(f"Updated order {clean_id} to {status} in {abs_p}")
+        except Exception as e:
+            logging.error(f"Error syncing order status in {abs_p}: {e}")
+
+    # Also notify Node.js server via HTTP
+    try:
+        endpoint = "approve" if status == "Bajarildi" else "reject"
+        w_url = get_webapp_url()
+        if w_url:
+            send_request(f"{w_url}/api/orders/{endpoint}", {"order_id": clean_id})
+        send_request(f"http://127.0.0.1:3000/api/orders/{endpoint}", {"order_id": clean_id})
+    except Exception:
+        pass
+
+    return found_tx
+
+
 @dp.callback_query(F.data.startswith("approve_"))
 async def handle_webapp_order_approve(call: types.CallbackQuery):
     if call.from_user.id != ADMIN_ID:
@@ -3463,74 +3848,24 @@ async def handle_webapp_order_approve(call: types.CallbackQuery):
     prod_name = m_prod.group(1).strip() if m_prod else "Mahsulot"
     recipient = m_rec.group(1).strip() if m_rec else ""
 
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    possible_paths = [
-        os.path.join(base_dir, "data", "database.json"),
-        os.path.join(base_dir, "..", "wep app", "data", "database.json"),
-        os.path.join("data", "database.json")
-    ]
-    web_db = None
-    db_path = None
-    for p in possible_paths:
-        if os.path.exists(p):
-            try:
-                with open(p, "r", encoding="utf-8") as f:
-                    web_db = json.load(f)
-                db_path = p
-                break
-            except Exception:
-                pass
-
-    tx = None
-    if web_db:
-        tx = next((t for t in web_db.get("transactions", []) if t.get("id") == order_id), None)
-        if tx:
-            user_id = str(tx.get("user_id", user_id))
-            amount = int(tx.get("amount", amount))
-            prod_name = tx.get("name", prod_name)
-            recipient = tx.get("recipient", recipient)
-            if tx.get("status") != "Kutilmoqda":
-                await call.answer(f"ℹ️ Bu buyurtma allaqachon: {tx.get('status')}", show_alert=True)
-                return
-
     if not user_id:
         await call.answer("❌ Xaridor ID topilmadi!", show_alert=True)
         return
 
     current_bal = get_balance(user_id)
-    if web_db and "users" in web_db and user_id in web_db["users"]:
-        current_bal = web_db["users"][user_id].get("balance", current_bal)
+    new_bal = current_bal - amount if current_bal >= amount else current_bal
 
-    if current_bal < amount:
-        await call.answer("⚠️ Foydalanuvchi balansida mablag' yetarli emas!", show_alert=True)
-        return
-
-    new_bal = current_bal - amount
-
-    if web_db and db_path:
-        if tx:
-            tx["status"] = "Bajarildi"
-        if "users" in web_db and user_id in web_db["users"]:
-            web_db["users"][user_id]["balance"] = new_bal
-        try:
-            with open(db_path, "w", encoding="utf-8") as f:
-                json.dump(web_db, f, indent=2, ensure_ascii=False)
-        except Exception as e:
-            logging.error(f"Error saving database.json: {e}")
+    # Barcha bazalarda buyurtma holatini "Bajarildi" ga o'zgartirish
+    tx = sync_order_status_to_all_dbs(order_id, "Bajarildi", user_id=str(user_id), new_bal=new_bal)
+    if tx:
+        prod_name = tx.get("name", prod_name)
+        recipient = tx.get("recipient", recipient)
 
     user_balances[str(user_id)] = new_bal
     save_data()
 
     try:
         sync_balance_to_webapp(user_id, new_bal)
-    except Exception:
-        pass
-
-    try:
-        w_url = get_webapp_url()
-        if w_url:
-            send_request(f"{w_url}/api/orders/approve", {"order_id": order_id})
-        send_request("http://127.0.0.1:3000/api/orders/approve", {"order_id": order_id})
     except Exception:
         pass
 
@@ -3576,44 +3911,10 @@ async def handle_webapp_order_reject(call: types.CallbackQuery):
     user_id = cb_user_id or (m_user.group(1) if m_user else None)
     prod_name = m_prod.group(1).strip() if m_prod else "Mahsulot"
 
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    possible_paths = [
-        os.path.join(base_dir, "data", "database.json"),
-        os.path.join(base_dir, "..", "wep app", "data", "database.json"),
-        os.path.join("data", "database.json")
-    ]
-    web_db = None
-    db_path = None
-    for p in possible_paths:
-        if os.path.exists(p):
-            try:
-                with open(p, "r", encoding="utf-8") as f:
-                    web_db = json.load(f)
-                db_path = p
-                break
-            except Exception:
-                pass
-
-    if web_db and db_path:
-        tx = next((t for t in web_db.get("transactions", []) if t.get("id") == order_id), None)
-        if tx:
-            if tx.get("status") != "Kutilmoqda":
-                await call.answer(f"ℹ️ Bu buyurtma holati allaqachon: {tx.get('status')}", show_alert=True)
-                return
-            tx["status"] = "Bekor qilindi"
-            try:
-                with open(db_path, "w", encoding="utf-8") as f:
-                    json.dump(web_db, f, indent=2, ensure_ascii=False)
-            except Exception as e:
-                logging.error(f"Error saving database.json: {e}")
-
-    try:
-        w_url = get_webapp_url()
-        if w_url:
-            send_request(f"{w_url}/api/orders/reject", {"order_id": order_id})
-        send_request("http://127.0.0.1:3000/api/orders/reject", {"order_id": order_id})
-    except Exception:
-        pass
+    # Barcha bazalarda buyurtma holatini "Bekor qilindi" ga o'zgartirish
+    tx = sync_order_status_to_all_dbs(order_id, "Bekor qilindi")
+    if tx:
+        prod_name = tx.get("name", prod_name)
 
     if user_id and str(user_id).isdigit():
         try:
@@ -3735,11 +4036,80 @@ async def select_product(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
+async def check_telegram_username(uname_raw: str):
+    """
+    Telegram username yoki ID mavjudligini tekshiradi.
+    Qaytaradi: (exists: bool, name: str | None, formatted_target: str)
+    """
+    raw = (uname_raw or "").strip()
+    raw = re.sub(r"^https?://t\.me/", "", raw).strip()
+    raw = re.sub(r"^t\.me/", "", raw).strip()
+    raw = raw.lstrip("@").strip()
+
+    if not raw:
+        return False, None, None
+
+    # Raqamli Telegram ID bo'lsa
+    if raw.isdigit():
+        if len(raw) >= 5:
+            try:
+                chat = await bot.get_chat(int(raw))
+                name = chat.full_name or chat.title or f"ID: {raw}"
+                if chat.username:
+                    return True, name, f"@{chat.username}"
+                return True, name, f"ID: {raw}"
+            except Exception:
+                return True, f"ID: {raw}", f"ID: {raw}"
+        return False, None, None
+
+    # Username formati: 4-32 ta harf, raqam va pastki chiziq
+    if len(raw) < 4 or len(raw) > 32 or not re.match(r'^[a-zA-Z0-9_]+$', raw):
+        return False, None, None
+
+    url = f"https://t.me/{raw}"
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    }
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=5)) as resp:
+                if resp.status != 200:
+                    return True, f"@{raw}", f"@{raw}"
+                html = await resp.text()
+    except Exception as e:
+        logging.warning(f"Error checking username @{raw}: {e}")
+        return True, f"@{raw}", f"@{raw}"
+
+    # Agar t.me sahifasida noindex bo'lsa, profil Telegramda yo'q
+    if '<meta name="robots" content="noindex, nofollow">' in html:
+        return False, None, None
+
+    m = re.search(r'<meta property="og:title" content="([^"]+)">', html)
+    og_title = m.group(1).strip() if m else ""
+
+    # Agar og:title mavjud bo'lmasa yoki 'Telegram: Contact @...' bo'lsa, mavjud emas
+    if not og_title or og_title == f"Telegram: Contact @{raw}" or og_title.startswith("Telegram: Contact @"):
+        return False, None, None
+
+    # Profil nomini olish
+    m2 = re.search(r'<div class="tgme_page_title"[^>]*>(.*?)</div>', html, re.DOTALL)
+    page_title = re.sub(r'<[^>]+>', '', m2.group(1)).strip() if m2 else ""
+    name = page_title or og_title
+
+    return True, name, f"@{raw}"
+
+
 @dp.callback_query(F.data == "target_self")
 async def target_self_handler(callback: types.CallbackQuery, state: FSMContext):
     username = callback.from_user.username
-    target = f"@{username}" if username else f"ID: {callback.from_user.id}"
-    await state.update_data(target=target)
+    full_name = callback.from_user.full_name
+    if username:
+        target = f"@{username}"
+        target_display = f"@{username} ({full_name})"
+    else:
+        target = f"ID: {callback.from_user.id}"
+        target_display = f"ID: {callback.from_user.id} ({full_name})"
+    await state.update_data(target=target, target_name=full_name, target_display=target_display)
     await confirm_purchase_menu(callback, state)
 
 
@@ -3755,30 +4125,43 @@ async def target_other_handler(callback: types.CallbackQuery, state: FSMContext)
 
 @dp.message(BuyState.waiting_for_target)
 async def process_target_username(message: types.Message, state: FSMContext):
-    target = (message.text or "").strip()
-    target = re.sub(r"^https?://t\.me/", "@", target)
-    target = re.sub(r"^t\.me/", "@", target)
+    raw_text = (message.text or "").strip()
 
-    if not target.startswith("@") and not target.isdigit():
-        target = f"@{target}"
-
-    if len(target) < 3:
-        msg = await message.answer("<blockquote>⚠️ To'g'ri username yuboring (Masalan: @username)!</blockquote>")
+    if not raw_text:
+        msg = await message.answer("<blockquote>⚠️ Iltimos, foydalanuvchi username'ini yuboring!</blockquote>")
         await asyncio.sleep(2)
         await safe_delete(msg)
         return
 
+    wait_msg = await message.answer("🔍 <i>Foydalanuvchi profili Telegramdan tekshirilmoqda...</i>")
+
+    exists, name, formatted_target = await check_telegram_username(raw_text)
+    await safe_delete(wait_msg)
+
+    if not exists:
+        await message.answer(
+            "<blockquote>❌ <b>Bunday profil Telegramda topilmadi!</b>\n\n"
+            "Iltimos, username to'g'ri yozilganini tekshirib, mavjud username yuboring:\n"
+            "(Masalan: @username yoki username)</blockquote>",
+            reply_markup=back_main_keyboard(message.from_user.id)
+        )
+        return
+
+    display_target = f"{formatted_target} ({name})" if name and name != formatted_target and not formatted_target.startswith("ID:") else formatted_target
+    if formatted_target.startswith("ID:") and name and name != formatted_target:
+        display_target = f"{formatted_target} ({name})"
+
     await safe_delete(message)
-    await state.update_data(target=target)
+    await state.update_data(target=formatted_target, target_name=name, target_display=display_target)
     await confirm_purchase_menu_msg(message, state)
 
 
 async def confirm_purchase_menu(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     product = data.get("product")
-    target = data.get("target")
+    target_display = data.get("target_display") or data.get("target")
 
-    if not product or not target:
+    if not product or not target_display:
         await callback.answer("❌ Ma'lumot topilmadi.", show_alert=True)
         return
 
@@ -3795,7 +4178,7 @@ async def confirm_purchase_menu(callback: types.CallbackQuery, state: FSMContext
         f"<blockquote><b>Xaridni tasdiqlang:</b>\n\n"
         f"<b>Mahsulot:</b> {product['formatted']}\n"
         f"<b>Narxi:</b> {money(product['price'])} so'm\n"
-        f"<b>Qabul qiluvchi:</b> {target}{admin_note}</blockquote>"
+        f"<b>Qabul qiluvchi:</b> {target_display}{admin_note}</blockquote>"
     )
     await callback.message.edit_text(text, reply_markup=builder.as_markup())
     await callback.answer()
@@ -3804,9 +4187,9 @@ async def confirm_purchase_menu(callback: types.CallbackQuery, state: FSMContext
 async def confirm_purchase_menu_msg(message: types.Message, state: FSMContext):
     data = await state.get_data()
     product = data.get("product")
-    target = data.get("target")
+    target_display = data.get("target_display") or data.get("target")
 
-    if not product or not target:
+    if not product or not target_display:
         await state.clear()
         await message.answer("❌ Ma'lumot topilmadi.", reply_markup=back_main_keyboard(message.from_user.id))
         return
@@ -3824,7 +4207,7 @@ async def confirm_purchase_menu_msg(message: types.Message, state: FSMContext):
         f"<blockquote><b>Xaridni tasdiqlang:</b>\n\n"
         f"<b>Mahsulot:</b> {product['formatted']}\n"
         f"<b>Narxi:</b> {money(product['price'])} so'm\n"
-        f"<b>Qabul qiluvchi:</b> {target}{admin_note}</blockquote>"
+        f"<b>Qabul qiluvchi:</b> {target_display}{admin_note}</blockquote>"
     )
     await delete_previous_menu(message.from_user.id)
     msg = await message.answer(text, reply_markup=builder.as_markup())
@@ -3837,6 +4220,7 @@ async def execute_purchase(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     product = data.get("product")
     target = data.get("target")
+    target_display = data.get("target_display") or target
     prod_key = data.get("prod_key", "")
 
     if not product or not target:
@@ -3859,7 +4243,8 @@ async def execute_purchase(callback: types.CallbackQuery, state: FSMContext):
         "product_name": product["name"],
         "product_formatted": product["formatted"],
         "price": price,
-        "target": target
+        "target": target,
+        "target_display": target_display
     }
     save_data()
 
@@ -3876,7 +4261,7 @@ async def execute_purchase(callback: types.CallbackQuery, state: FSMContext):
             f"<b>Mahsulot:</b> {product['formatted']}\n"
             f"<b>To'langan summa:</b> {money(price)} so'm (Balansdan yechildi)\n"
             f"<b>Buyurtma ID:</b> <code>#{order_id}</code>\n"
-            f"<b>Qabul qiluvchi:</b> {target}\n\n"
+            f"<b>Qabul qiluvchi:</b> {target_display}\n\n"
             f"⚡️ Ushbu Premium obunasi <b>Admin orqali</b> akkauntingizga kirib faollashtirib beriladi.\n\n"
             f"Iltimos, pastdagi <b>🧑‍💻 Adminga yozish</b> tugmasini bosing va adminga (<code>#{order_id}</code>) raqamingizni yuboring!</blockquote>"
         )
@@ -3885,7 +4270,7 @@ async def execute_purchase(callback: types.CallbackQuery, state: FSMContext):
         await callback.message.edit_text(
             f"<blockquote>{custom_tag('stars')}<b>Buyurtmangiz qabul qilindi!</b>\n\n"
             f"<b>Mahsulot:</b> {product['formatted']}\n"
-            f"<b>Qabul qiluvchi:</b> {target}\n\n"
+            f"<b>Qabul qiluvchi:</b> {target_display}\n\n"
             "Tez orada buyurtmangiz bajariladi. Rahmat!</blockquote>",
             reply_markup=back_main_keyboard(user_id)
         )
@@ -3904,20 +4289,29 @@ async def execute_purchase(callback: types.CallbackQuery, state: FSMContext):
             f"Mahsulot: <b>{product['name']}</b>\n"
             f"To'lov: <b>{money(price)} so'm</b> (Balansdan yechildi ✅)\n"
             f"Buyurtma ID: <code>#{order_id}</code>\n"
-            f"Qabul qiluvchi: <code>{target}</code>\n\n"
+            f"Qabul qiluvchi: <code>{target_display}</code>\n\n"
             f"⚠️ <b>DIQQAT:</b> Mijoz akkauntiga kirib Premium faollashtirishingiz uchun sizga yozadi!</blockquote>"
         )
     else:
         admin_text = (
-            f"<blockquote><b>Yangi buyurtma!</b>\n\n"
-            f"Xaridor: {callback.from_user.full_name} (@{callback.from_user.username or 'yoq'})\n"
+            f"<blockquote>📦 <b>Yangi Buyurtma!</b>\n\n"
+            f"Xaridor: <a href='tg://user?id={user_id}'>{callback.from_user.full_name}</a> (@{callback.from_user.username or 'yoq'})\n"
             f"ID: <code>{user_id}</code>\n"
-            f"Mahsulot: {product['name']}\n"
-            f"Narxi: {money(price)} so'm\n"
-            f"Qabul qiluvchi: {target}</blockquote>"
+            f"Mahsulot: <b>{product['name']}</b>\n"
+            f"To'lov: <b>{money(price)} so'm</b> (Balansdan yechildi ✅)\n"
+            f"Buyurtma ID: <code>#{order_id}</code>\n"
+            f"Qabul qiluvchi: <code>{target_display}</code></blockquote>"
         )
 
-    await bot.send_message(chat_id=ADMIN_ID, text=admin_text, reply_markup=admin_builder.as_markup())
+    try:
+        await bot.send_message(
+            chat_id=ADMIN_ID,
+            text=admin_text,
+            reply_markup=admin_builder.as_markup()
+        )
+    except Exception:
+        pass
+
     await callback.answer("✅ Buyurtma qabul qilindi!")
 
 
