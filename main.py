@@ -1065,9 +1065,18 @@ async def post_order_to_channel(product_name, recipient="", price=0, order_id=""
             except Exception:
                 pass
 
-        # Xarid qilgan odamning o'zining niki (ustiga bossa akkaunti chiqmaydigan qilib oddiy matn)
-        buyer_nick = user_name or rec_name or clean_user or "Mijoz"
-        safe_name = html.escape(buyer_nick)
+        # Qabul qiluvchi (recipient) ni ko'rsatamiz — xaridor (buyer) emas!
+        if rec_name and rec_name not in ("", "Mijoz", "Foydalanuvchi"):
+            # Telegramdan olingan haqiqiy ism
+            safe_name = html.escape(rec_name)
+        elif clean_user:
+            # @username ko'rinishida
+            safe_name = html.escape(f"@{clean_user}")
+        elif rec_str:
+            safe_name = html.escape(rec_str)
+        else:
+            # Agar recipient umuman bo'lmasa, faqat shu holda buyer nomini ko'rsatamiz
+            safe_name = html.escape(user_name or "Mijoz")
         rec_display = f"<b>{safe_name}</b>"
 
         prod_display = format_channel_product(product_name, prod_key)
@@ -4830,7 +4839,7 @@ async def execute_purchase(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     product = data.get("product")
     target = data.get("target")
-    target_name = data.get("target_name") or callback.from_user.full_name
+    target_name = data.get("target_name") or ""
     target_display = data.get("target_display") or target
     prod_key = data.get("prod_key", "")
 
@@ -4988,7 +4997,7 @@ async def admin_order_done(callback: types.CallbackQuery):
             product_name=order_info.get("product_formatted") or order_info.get("product_name"),
             prod_key=order_info.get("prod_key", ""),
             recipient=order_info.get("target", ""),
-            recipient_name=order_info.get("target_name") or order_info.get("user_name", ""),
+            recipient_name=order_info.get("target_name", ""),
             price=order_info.get("price", 0),
             order_id=order_id,
             user_name=order_info.get("user_name", "")
@@ -5128,7 +5137,7 @@ async def start_web_server():
     app.router.add_post("/webhook", payhamyon_webhook_handler)
     runner = web.AppRunner(app)
     await runner.setup()
-    port = int(os.getenv("PORT", 8080))
+    port = int(os.getenv("BOT_WEB_PORT", 8080))
     site = web.TCPSite(runner, "0.0.0.0", port)
     await site.start()
 
